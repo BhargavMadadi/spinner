@@ -342,7 +342,6 @@
     </div>
 
     <button class="spin-btn" id="spinBtn" onclick="doSpin()">Spin the Wheel</button>
-    <button class="reset-btn hidden" id="resetBtn" onclick="nextRound()">↩ &nbsp;Go Again</button>
 
     <div class="result-banner" id="resultBanner">
       <div class="rb-num" id="rbNum"></div>
@@ -424,7 +423,6 @@ function initRound() {
   document.getElementById('spinBtn').classList.remove('hidden');
   document.getElementById('spinBtn').disabled = false;
   document.getElementById('spinBtn').textContent = 'Spin the Wheel';
-  document.getElementById('resetBtn').classList.add('hidden');
 
   updateCounter();
   renderTeamList();
@@ -627,10 +625,22 @@ function showFinalOverlay() {
     });
     spawnSparkles();
 
-    // Always show "Go Again" below the overlay
-    const resetBtn = document.getElementById('resetBtn');
-    resetBtn.textContent = '↩  Go Again';
-    setTimeout(() => resetBtn.classList.remove('hidden'), 200 + ALL_TEAMS.length * 140 + 300);
+    // Append Go Again button inside the overlay itself — guaranteed visible
+    const totalDelay = 200 + ALL_TEAMS.length * 140 + 300;
+    setTimeout(() => {
+      // Remove any existing go-again inside overlay first
+      const existing = overlay.querySelector('.go-again-wrap');
+      if (existing) existing.remove();
+      const wrap = document.createElement('div');
+      wrap.className = 'go-again-wrap';
+      wrap.style.cssText = 'display:flex;justify-content:center;margin-top:.4rem;flex-shrink:0;';
+      const btn = document.createElement('button');
+      btn.className = 'reset-btn';
+      btn.textContent = '↩  Go Again';
+      btn.onclick = nextRound;
+      wrap.appendChild(btn);
+      overlay.appendChild(wrap);
+    }, totalDelay);
   }, 450);
 }
 
@@ -671,11 +681,19 @@ function updateCounter() {
 // ═══════════════════════════════════════════════
 let failsafeTimeout = null;
 document.addEventListener('keydown', (e) => {
-  if (e.shiftKey && (e.key === 'L' || e.key === 'l')) {
-    buildRoundOrder();
+  // Shift+L or Cmd+L (Mac) — both work
+  const isShiftL = e.shiftKey && (e.key === 'L' || e.key === 'l');
+  const isCmdL   = e.metaKey  && (e.key === 'L' || e.key === 'l');
+  if (isShiftL || isCmdL) {
+    e.preventDefault(); // prevent Cmd+L opening address bar etc.
+
+    // Force-rig Lok Naach last for the CURRENT round, no matter what round we're on
+    // Preserves already-picked teams, only re-rigs the remaining sequence
+    const others  = ALL_TEAMS.filter(t => t !== LOCKED_LAST);
+    const rand    = shuffle(others);
+    roundOrder    = [...rand, LOCKED_LAST];
 
     const blob = document.getElementById('bgTr');
-    // Barely perceptible swell — looks like natural ambient breathing
     blob.style.transition = 'opacity 2s ease, transform 2s ease';
     blob.style.opacity = '0.88';
     blob.style.transform = 'scale(1.05)';
