@@ -353,6 +353,11 @@
     <div class="s-card">
       <h3>Teams</h3>
       <div class="team-list" id="teamList"></div>
+      <div class="add-row">
+        <input type="text" id="newTeamInput" placeholder="Add a team…" maxlength="48"
+               onkeydown="if(event.key==='Enter') addTeam()">
+        <button class="add-btn" onclick="addTeam()">+</button>
+      </div>
     </div>
     <div class="s-card">
       <div class="counter">
@@ -368,7 +373,7 @@
 //  CONFIG
 // ═══════════════════════════════════════════════
 const LOCKED_LAST = "Lok Naach";
-const ALL_TEAMS = [
+let ALL_TEAMS = [
   "Stanford Bhangra",
   "Classic City Bhangra",
   "Mehfil Mitraan Di Bhangra",
@@ -666,6 +671,15 @@ function renderTeamList() {
     item.innerHTML = `<div class="team-dot"></div><span class="team-name-text">${t}</span>`;
     el.appendChild(item);
   });
+}
+
+function addTeam() {
+  const inp  = document.getElementById('newTeamInput');
+  const name = inp.value.trim();
+  if (!name || ALL_TEAMS.includes(name)) return;
+  ALL_TEAMS.push(name);
+  inp.value = '';
+  initRound();
 }
 
 function updateCounter() {
