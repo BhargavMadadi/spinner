@@ -14,6 +14,11 @@
     --accent-2:#7b3cff;
     --border:  rgba(255,255,255,0.14);
     --panel:   linear-gradient(145deg,rgba(12,5,46,.95),rgba(19,10,56,.97));
+
+    /* failsafe glow — default subtle, armed = brighter */
+    --glow-tl-opacity: 0;
+    --glow-tr-x: 80%;
+    --glow-tr-opacity: 1;
   }
 
   * { margin:0; padding:0; box-sizing:border-box; }
@@ -21,18 +26,46 @@
   body {
     font-family: "Inter", system-ui, sans-serif;
     color: var(--ink);
-    background:
-      radial-gradient(1200px 800px at 80% -10%, #2a1466 0%, transparent 60%),
-      radial-gradient(1000px 700px at 10% 110%,  #3a0ca3 0%, transparent 60%),
-      var(--space-1);
     min-height: 100vh;
     overflow-x: hidden;
     display: flex;
     flex-direction: column;
     align-items: center;
     padding: 2.4rem 1.2rem 3.6rem;
+    position: relative;
   }
 
+  /* Animated background blobs — top-right normally, shifts on failsafe */
+  .bg-blob {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: -1;
+  }
+  .bg-blob::before {
+    content: '';
+    position: absolute;
+    width: 1200px; height: 800px;
+    top: -10%; left: var(--glow-tr-x);
+    background: radial-gradient(ellipse, rgba(42,20,102, var(--glow-tr-opacity)) 0%, transparent 60%);
+    transition: left 1.8s cubic-bezier(.4,0,.2,1), opacity 1.8s ease;
+  }
+  .bg-blob::after {
+    content: '';
+    position: absolute;
+    width: 1000px; height: 700px;
+    bottom: -10%; left: 10%;
+    background: radial-gradient(ellipse, rgba(58,12,163,0.7) 0%, transparent 60%);
+  }
+
+  /* dark base always underneath */
+  body::before {
+    content: '';
+    position: fixed; inset: 0; z-index: -2;
+    background: var(--space-1);
+  }
+
+  /* ── TITLES ── */
   .page-title {
     font-family: "Bangers";
     font-size: clamp(2.6rem, 6vw, 4rem);
@@ -48,9 +81,25 @@
     letter-spacing: .18em;
     text-transform: uppercase;
     font-weight: 700;
-    margin-bottom: 2rem;
+    margin-bottom: .8rem;
   }
 
+  /* round indicator */
+  .round-indicator {
+    font-family: "Bangers";
+    font-size: 1rem;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-align: center;
+    margin-bottom: 1.6rem;
+    transition: color .3s;
+  }
+  .round-indicator span {
+    color: var(--accent);
+  }
+
+  /* ── LAYOUT ── */
   .layout {
     display: flex;
     gap: 1.6rem;
@@ -60,7 +109,6 @@
     justify-content: center;
   }
 
-  /* ── WHEEL SECTION ── */
   .wheel-section {
     flex: 1;
     display: flex;
@@ -161,10 +209,7 @@
     transform: translateY(10px);
     transition: opacity .35s ease, transform .35s ease;
   }
-  .fo-row.visible {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  .fo-row.visible { opacity: 1; transform: translateY(0); }
   .fo-num {
     font-family: "Bangers"; font-size: 1.6rem; letter-spacing: .06em;
     color: var(--accent); min-width: 24px;
@@ -173,10 +218,7 @@
 
   .wheel-wrap.done canvas,
   .wheel-wrap.done .pointer,
-  .wheel-wrap.done .hub {
-    opacity: 0;
-    pointer-events: none;
-  }
+  .wheel-wrap.done .hub { opacity: 0; pointer-events: none; }
 
   /* ── SPIN BUTTON ── */
   .spin-btn {
@@ -229,7 +271,6 @@
     display: flex; flex-direction: column; gap: .9rem;
     padding-top: .2rem;
   }
-
   .s-card {
     background: var(--panel);
     border: 1px solid var(--border);
@@ -250,45 +291,31 @@
     border-radius: .9rem;
     border: 1px solid rgba(255,255,255,.10);
     background: rgba(255,255,255,.05);
-    box-shadow: 0 16px 34px rgba(0,0,0,.35);
     font-size: .83rem; font-weight: 700;
-    transition: opacity .2s;
+    transition: opacity .2s, border-color .2s;
   }
-  .team-item.done { opacity: .3; text-decoration: line-through; }
+  .team-item.done { opacity: .28; text-decoration: line-through; }
   .team-dot {
     width: 7px; height: 7px; border-radius: 50%;
     flex-shrink: 0; background: var(--accent-2);
+    transition: background .2s;
   }
   .team-item.done .team-dot { background: rgba(255,255,255,.2); }
   .team-name-text { flex: 1; }
-  .remove-btn {
-    background: none; border: none; color: rgba(255,255,255,.22);
-    cursor: pointer; font-size: .78rem; line-height: 1; padding: 0 1px;
-    transition: color .15s;
-  }
-  .remove-btn:hover { color: rgba(255,255,255,.65); }
 
-  .add-row { display: flex; gap: .45rem; margin-top: .8rem; }
-  .add-row input {
-    flex: 1;
-    background: rgba(0,0,0,.25);
-    border: 1px solid rgba(255,255,255,.12);
-    border-radius: .9rem;
-    color: var(--ink); font-family: "Inter"; font-size: .8rem;
-    padding: .52rem .8rem; outline: none;
-    transition: border-color .15s;
+  /* round result history */
+  .round-history {
+    display: flex; flex-direction: column; gap: .38rem;
   }
-  .add-row input:focus { border-color: rgba(114,255,155,.28); }
-  .add-row input::placeholder { color: var(--muted); }
-  .add-btn {
-    background: rgba(255,255,255,.06);
-    border: 1px solid rgba(255,255,255,.14);
-    border-radius: .9rem;
-    color: var(--ink); cursor: pointer; font-size: 1.1rem;
-    width: 34px; display: flex; align-items: center; justify-content: center;
-    transition: background .15s;
+  .rh-item {
+    font-size: .78rem; font-weight: 700;
+    color: var(--muted);
+    padding: .35rem .6rem;
+    border-radius: .5rem;
+    background: rgba(255,255,255,.04);
+    border: 1px solid rgba(255,255,255,.07);
   }
-  .add-btn:hover { background: rgba(255,255,255,.12); }
+  .rh-item span { color: var(--ink); }
 
   .counter {
     text-align: center; font-size: .8rem; font-weight: 700;
@@ -296,29 +323,9 @@
   }
   .counter span { color: var(--accent); }
 
-  /* ── FAILSAFE TOAST (invisible confirmation for you only) ── */
-  .failsafe-toast {
-    position: fixed;
-    bottom: 24px; right: 24px;
-    background: rgba(6,2,22,0.92);
-    border: 1px solid rgba(114,255,155,.3);
-    border-radius: .8rem;
-    padding: .6rem 1rem;
-    font-size: .75rem;
-    font-weight: 700;
-    color: var(--accent);
-    letter-spacing: .06em;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity .25s ease;
-    z-index: 9999;
-  }
-  .failsafe-toast.show {
-    opacity: 1;
-  }
-
+  /* sparkles */
   .sparkle {
-    position: fixed; pointer-events: none; z-index: 999;
+    position: fixed; pointer-events: none; z-index: 9998;
     animation: sparkleFall 1.3s ease-out forwards; font-size: 15px;
   }
   @keyframes sparkleFall {
@@ -334,16 +341,19 @@
 </head>
 <body>
 
+<div class="bg-blob" id="bgBlob"></div>
+
 <h1 class="page-title">Bhangra Show Order</h1>
 <p class="event-tag">AAJ KA DHAMAKA · March 7, 2026</p>
+<p class="round-indicator" id="roundIndicator">Round <span id="roundNum">1</span> of 3</p>
 
 <div class="layout">
 
   <div class="wheel-section">
     <div class="wheel-wrap" id="wheelWrap">
       <canvas id="wheelCanvas" width="600" height="600"></canvas>
-      <div class="pointer" id="pointer"></div>
-      <div class="hub" id="hub" onclick="doSpin()">SPIN</div>
+      <div class="pointer"></div>
+      <div class="hub" onclick="doSpin()">SPIN</div>
       <div class="final-overlay" id="finalOverlay">
         <div class="final-overlay-header">✦ &nbsp;Full Show Order</div>
       </div>
@@ -361,31 +371,25 @@
     <div class="s-card">
       <h3>Teams</h3>
       <div class="team-list" id="teamList"></div>
-      <div class="add-row">
-        <input type="text" id="newTeamInput" placeholder="Add a team…" maxlength="48"
-               onkeydown="if(event.key==='Enter') addTeam()">
-        <button class="add-btn" onclick="addTeam()">+</button>
-      </div>
+    </div>
+    <div class="s-card" id="historyCard" style="display:none">
+      <h3>Previous Rounds</h3>
+      <div class="round-history" id="roundHistory"></div>
     </div>
     <div class="s-card">
       <div class="counter">
-        Spin <span id="spinsDone">0</span> of <span id="spinsTotal">3</span>
+        Pick <span id="picksDone">0</span> of <span id="picksTotal">5</span> this round
       </div>
     </div>
   </div>
 
 </div>
 
-<!-- invisible toast only you can see (bottom-right corner) -->
-<div class="failsafe-toast" id="failsafeToast">✓ Failsafe armed</div>
-
 <script>
 // ═══════════════════════════════════════════════
 //  CONFIG
 // ═══════════════════════════════════════════════
-const LOCKED_LAST  = "Lok Naach";
-const TOTAL_SPINS  = 3; // captains want 3 spins
-
+const LOCKED_LAST = "Lok Naach";
 const ALL_TEAMS = [
   "Stanford Bhangra",
   "Classic City Bhangra",
@@ -393,12 +397,6 @@ const ALL_TEAMS = [
   "Lok Naach",
   "Birmingham's Blazin' Bhangra",
 ];
-
-// The 3 spin results we'll force:
-//   Spin 1 → random non-Lok-Naach team
-//   Spin 2 → random non-Lok-Naach team (different from spin 1)
-//   Spin 3 → Lok Naach
-// We pre-generate the rigged sequence on load (and on failsafe).
 
 const SLICE_COLORS = [
   "#1e0d5e","#14073b","#2a1466","#0b0624",
@@ -408,10 +406,12 @@ const SLICE_COLORS = [
 // ═══════════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════════
-let riggedSequence = []; // [spin1result, spin2result, spin3result]
-let spinCount      = 0;  // how many spins completed
-let spinning       = false;
-let angle          = 0;
+let currentRound    = 1;   // 1, 2, or 3
+let roundOrder      = [];  // pre-rigged pick order for THIS round (5 teams)
+let pickedThisRound = [];  // teams picked so far this round
+let spinning        = false;
+let angle           = 0;
+let roundResults    = [];  // stores completed round orders [ [r1order], [r2order] ]
 
 function shuffle(arr) {
   const a = [...arr];
@@ -422,18 +422,23 @@ function shuffle(arr) {
   return a;
 }
 
-// Build the rigged 3-pick sequence fresh
-function armSequence() {
-  const others   = ALL_TEAMS.filter(t => t !== LOCKED_LAST);
-  const shuffled = shuffle(others);
-  // picks 2 distinct non-Lok-Naach teams for spins 1 & 2, Lok Naach for spin 3
-  riggedSequence = [shuffled[0], shuffled[1], LOCKED_LAST];
+// Build a rigged pick order for the current round
+// Rounds 1 & 2: fully random order (Lok Naach can land anywhere)
+// Round 3: Lok Naach is always LAST (5th pick)
+function buildRoundOrder() {
+  const others = ALL_TEAMS.filter(t => t !== LOCKED_LAST);
+  const rand   = shuffle(others);
+  if (currentRound === 3) {
+    roundOrder = [...rand, LOCKED_LAST]; // guaranteed last on round 3
+  } else {
+    roundOrder = shuffle([...ALL_TEAMS]); // truly random for rounds 1 & 2
+  }
+  pickedThisRound = [];
 }
 
-function init() {
-  armSequence();
-  spinCount = 0;
-  angle     = 0;
+function initRound() {
+  buildRoundOrder();
+  angle = 0;
 
   // reset overlay
   const overlay = document.getElementById('finalOverlay');
@@ -441,20 +446,21 @@ function init() {
   while (overlay.children.length > 1) overlay.removeChild(overlay.lastChild);
   document.getElementById('wheelWrap').classList.remove('done');
 
-  document.getElementById('resultBanner').classList.remove('show','hidden');
+  document.getElementById('resultBanner').classList.remove('show', 'hidden');
 
   const btn = document.getElementById('spinBtn');
-  btn.textContent = 'Spin the Wheel';
-  btn.disabled    = false;
   btn.classList.remove('hidden');
+  btn.disabled = false;
+  btn.textContent = 'Spin the Wheel';
 
+  document.getElementById('roundNum').textContent = currentRound;
   updateCounter();
   renderTeamList();
   drawWheel();
 }
 
 // ═══════════════════════════════════════════════
-//  CANVAS — always shows ALL 5 teams on wheel
+//  CANVAS
 // ═══════════════════════════════════════════════
 const canvas = document.getElementById('wheelCanvas');
 const ctx    = canvas.getContext('2d');
@@ -473,10 +479,12 @@ function lighten(hex, amt) {
 function drawWheel(highlightName = null) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  // All 5 teams always stay on the wheel (no removal between spins)
-  const slices = ALL_TEAMS;
-  const n      = slices.length;
-  const slice  = (2 * Math.PI) / n;
+  // Only show teams not yet picked this round
+  const remaining = ALL_TEAMS.filter(t => !pickedThisRound.includes(t));
+  const n = remaining.length;
+  if (n === 0) return;
+
+  const slice = (2 * Math.PI) / n;
 
   // outer glow ring
   ctx.beginPath();
@@ -494,7 +502,7 @@ function drawWheel(highlightName = null) {
   for (let i = 0; i < n; i++) {
     const start = angle + i * slice;
     const end   = start + slice;
-    const isHL  = (slices[i] === highlightName);
+    const isHL  = (remaining[i] === highlightName);
 
     ctx.beginPath();
     ctx.moveTo(CX, CY);
@@ -528,11 +536,11 @@ function drawWheel(highlightName = null) {
     ctx.shadowColor = 'rgba(0,0,0,0.95)';
     ctx.shadowBlur  = 5;
 
-    let label = slices[i];
+    let label = remaining[i];
     const maxW = R * 0.68;
     while (ctx.measureText(label).width > maxW && label.length > 2)
       label = label.slice(0, -1);
-    if (label !== slices[i]) label += '…';
+    if (label !== remaining[i]) label += '…';
 
     ctx.fillText(label, R - 18, fs / 3);
     ctx.restore();
@@ -540,22 +548,32 @@ function drawWheel(highlightName = null) {
 }
 
 // ═══════════════════════════════════════════════
-//  SPIN — lands on pre-determined target
+//  SPIN
 // ═══════════════════════════════════════════════
 function doSpin() {
-  if (spinning || spinCount >= TOTAL_SPINS) return;
+  if (spinning) return;
+
+  const remaining = ALL_TEAMS.filter(t => !pickedThisRound.includes(t));
+  if (remaining.length === 0) return;
+
+  // If only 1 team left, auto-resolve (no need to spin)
+  if (remaining.length === 1) {
+    onPickComplete(remaining[0]);
+    return;
+  }
 
   spinning = true;
   document.getElementById('spinBtn').disabled = true;
   document.getElementById('resultBanner').classList.remove('show');
 
-  const target    = riggedSequence[spinCount]; // who we're landing on this spin
-  const slices    = ALL_TEAMS;
-  const n         = slices.length;
-  const targetIdx = slices.indexOf(target);
+  // Next target = next in pre-rigged order that hasn't been picked yet
+  const nextPickIdx = pickedThisRound.length; // how many we've picked so far
+  const target      = roundOrder[nextPickIdx];
+  const targetIdx   = remaining.indexOf(target);
 
-  const slice       = (2 * Math.PI) / n;
-  // pointer is on the RIGHT (east = 0). Land target slice middle there.
+  const n     = remaining.length;
+  const slice = (2 * Math.PI) / n;
+
   const targetAngle = -(targetIdx * slice + slice / 2);
   let needed = ((targetAngle - angle) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
 
@@ -576,20 +594,23 @@ function doSpin() {
     } else {
       angle = (startAngle + total) % (2 * Math.PI);
       drawWheel(target);
-      setTimeout(() => onComplete(target), 350);
+      setTimeout(() => onPickComplete(target), 350);
     }
   })(t0);
 }
 
 // ═══════════════════════════════════════════════
-//  ON COMPLETE
+//  AFTER EACH PICK
 // ═══════════════════════════════════════════════
-function onComplete(team) {
+function onPickComplete(team) {
   spinning = false;
-  spinCount++;
+  pickedThisRound.push(team);
+
+  const pickNum  = pickedThisRound.length;
+  const isRoundDone = pickNum === ALL_TEAMS.length;
 
   // show result banner
-  document.getElementById('rbNum').textContent  = spinCount;
+  document.getElementById('rbNum').textContent  = pickNum;
   document.getElementById('rbName').textContent = team;
   document.getElementById('resultBanner').classList.add('show');
 
@@ -597,28 +618,52 @@ function onComplete(team) {
   renderTeamList();
   spawnSparkles();
 
-  const isLast = spinCount === TOTAL_SPINS;
-
   setTimeout(() => {
     drawWheel();
     const btn = document.getElementById('spinBtn');
 
-    if (isLast) {
+    if (isRoundDone) {
+      // Round complete
       btn.classList.add('hidden');
       document.getElementById('resultBanner').classList.add('hidden');
-      showFinalOverlay();
+      onRoundComplete();
     } else {
       btn.disabled = false;
-      // label the final spin button clearly
-      btn.textContent = spinCount === TOTAL_SPINS - 1
-        ? 'Show Full Show Order'
-        : 'Spin the Wheel';
+      // label last pick of round 3 specially
+      const remaining = ALL_TEAMS.filter(t => !pickedThisRound.includes(t));
+      if (currentRound === 3 && remaining.length === 1) {
+        btn.textContent = 'Show Full Show Order';
+      } else {
+        btn.textContent = 'Spin the Wheel';
+      }
     }
   }, 500);
 }
 
 // ═══════════════════════════════════════════════
-//  FINAL OVERLAY
+//  AFTER EACH ROUND COMPLETES
+// ═══════════════════════════════════════════════
+function onRoundComplete() {
+  roundResults.push([...pickedThisRound]);
+
+  if (currentRound === 3) {
+    // Final round done — show overlay
+    showFinalOverlay();
+  } else {
+    // Store round result in sidebar history, advance to next round
+    addRoundToHistory(currentRound, pickedThisRound);
+    currentRound++;
+
+    // Brief pause then reset for next round
+    setTimeout(() => {
+      initRound();
+      spawnSparkles();
+    }, 800);
+  }
+}
+
+// ═══════════════════════════════════════════════
+//  FINAL OVERLAY (round 3 results)
 // ═══════════════════════════════════════════════
 function showFinalOverlay() {
   const wrap    = document.getElementById('wheelWrap');
@@ -628,9 +673,7 @@ function showFinalOverlay() {
 
   while (overlay.children.length > 1) overlay.removeChild(overlay.lastChild);
 
-  // Build final order:
-  // spin 1 result = 1st, spin 2 result = 2nd, spin 3 (Lok Naach) = 3rd
-  riggedSequence.forEach((team, i) => {
+  pickedThisRound.forEach((team, i) => {
     const row = document.createElement('div');
     row.className = 'fo-row';
     row.innerHTML = `<div class="fo-num">${i + 1}</div><div class="fo-name">${team}</div>`;
@@ -648,53 +691,62 @@ function showFinalOverlay() {
 }
 
 // ═══════════════════════════════════════════════
-//  SIDEBAR — shows all teams, no highlighting
+//  SIDEBAR
 // ═══════════════════════════════════════════════
 function renderTeamList() {
   const el = document.getElementById('teamList');
   el.innerHTML = '';
   ALL_TEAMS.forEach(t => {
-    // mark as "done" only if this team was already picked in a past spin
-    const pickedInPastSpin = riggedSequence.slice(0, spinCount).includes(t);
+    const done = pickedThisRound.includes(t);
     const item = document.createElement('div');
-    item.className = 'team-item' + (pickedInPastSpin ? ' done' : '');
-    item.innerHTML = `
-      <div class="team-dot"></div>
-      <span class="team-name-text">${t}</span>
-    `;
+    item.className = 'team-item' + (done ? ' done' : '');
+    item.innerHTML = `<div class="team-dot"></div><span class="team-name-text">${t}</span>`;
     el.appendChild(item);
   });
 }
 
+function addRoundToHistory(round, order) {
+  const card = document.getElementById('historyCard');
+  card.style.display = '';
+  const history = document.getElementById('roundHistory');
+  const item = document.createElement('div');
+  item.className = 'rh-item';
+  item.innerHTML = `Round ${round}: <span>${order.join(' → ')}</span>`;
+  history.appendChild(item);
+}
+
 function updateCounter() {
-  document.getElementById('spinsDone').textContent = spinCount;
-  document.getElementById('spinsTotal').textContent = TOTAL_SPINS;
+  document.getElementById('picksDone').textContent = pickedThisRound.length;
+  document.getElementById('picksTotal').textContent = ALL_TEAMS.length;
 }
 
 // ═══════════════════════════════════════════════
-//  FAILSAFE — press Shift+L to silently re-arm
-//  (invisible, no button on screen)
+//  FAILSAFE — Shift+L
+//  Re-rigs round order silently. The top-right
+//  background gradient shifts subtly left then
+//  drifts back — almost imperceptible on screen share.
 // ═══════════════════════════════════════════════
-document.addEventListener('keydown', (e) => {
-  if (e.shiftKey && e.key === 'L') {
-    // Re-arm the sequence without resetting visual state
-    // so if they refresh and you haven't spun yet, just re-lock Lok Naach last
-    armSequence();
+let failsafeTimeout = null;
 
-    // brief toast in bottom-right corner for you only
-    const toast = document.getElementById('failsafeToast');
-    toast.classList.add('show');
-    setTimeout(() => toast.classList.remove('show'), 2000);
+document.addEventListener('keydown', (e) => {
+  if (e.shiftKey && (e.key === 'L' || e.key === 'l')) {
+    // Re-arm: rebuild the round order for the current round
+    // (guarantees Lok Naach last if we're in round 3, or re-shuffles for 1/2)
+    buildRoundOrder();
+
+    // Subtle visual: bg blob drifts slightly left then back
+    const blob = document.getElementById('bgBlob');
+    blob.style.setProperty('--glow-tr-x', '60%');
+    if (failsafeTimeout) clearTimeout(failsafeTimeout);
+    failsafeTimeout = setTimeout(() => {
+      blob.style.setProperty('--glow-tr-x', '80%');
+    }, 1800);
   }
 });
 
 // ═══════════════════════════════════════════════
-//  TEAM LIST — no add/remove in 3-spin mode
-//  (fixed teams, no editing needed)
+//  SPARKLES
 // ═══════════════════════════════════════════════
-function addTeam() {} // disabled
-function removeTeam() {} // disabled
-
 function spawnSparkles() {
   const e = ['✦','★','✧','◆','✨'];
   for (let i = 0; i < 16; i++) {
@@ -711,7 +763,7 @@ function spawnSparkles() {
 }
 
 // ── INIT ──
-init();
+initRound();
 canvas.addEventListener('click', doSpin);
 </script>
 </body>
