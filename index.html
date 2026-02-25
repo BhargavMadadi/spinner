@@ -33,7 +33,6 @@
     padding: 2.4rem 1.2rem 3.6rem;
   }
 
-  /* TITLE */
   .page-title {
     font-family: "Bangers";
     font-size: clamp(2.6rem, 6vw, 4rem);
@@ -52,7 +51,6 @@
     margin-bottom: 2rem;
   }
 
-  /* LAYOUT */
   .layout {
     display: flex;
     gap: 1.6rem;
@@ -62,7 +60,7 @@
     justify-content: center;
   }
 
-  /* WHEEL SECTION */
+  /* ── WHEEL SECTION ── */
   .wheel-section {
     flex: 1;
     display: flex;
@@ -72,9 +70,9 @@
     min-width: 0;
   }
 
+  /* The wheel-wrap is the anchor for the overlay */
   .wheel-wrap {
     position: relative;
-    /* bigger — fills available space generously */
     width: min(520px, 90vw);
     height: min(520px, 90vw);
   }
@@ -83,7 +81,8 @@
     width: 100%; height: 100%;
     cursor: pointer;
     filter: drop-shadow(0 0 32px rgba(123,60,255,.38));
-    transition: filter .3s;
+    transition: filter .3s, opacity .4s;
+    display: block;
   }
   canvas#wheelCanvas:hover {
     filter: drop-shadow(0 0 48px rgba(123,60,255,.58));
@@ -99,6 +98,7 @@
     border-right: 32px solid var(--accent);
     filter: drop-shadow(0 0 6px rgba(114,255,155,.7));
     z-index: 10;
+    transition: opacity .4s;
   }
 
   .hub {
@@ -112,14 +112,75 @@
     display: flex; align-items: center; justify-content: center;
     font-family: "Bangers"; font-size: 11px; letter-spacing: 1px;
     color: var(--ink); cursor: pointer;
-    transition: border-color .2s, box-shadow .2s;
+    transition: border-color .2s, box-shadow .2s, opacity .4s;
   }
   .hub:hover {
     border-color: rgba(114,255,155,.4);
     box-shadow: 0 0 22px rgba(114,255,155,.25);
   }
 
-  /* SPIN BUTTON */
+  /* ── FINAL ORDER OVERLAY — sits on top of wheel ── */
+  .final-overlay {
+    position: absolute;
+    inset: 0;
+    border-radius: 1.1rem;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    box-shadow: 0 18px 40px rgba(0,0,0,.8);
+    display: flex;
+    flex-direction: column;
+    padding: 1.4rem 1.5rem;
+    gap: .5rem;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .5s ease;
+    z-index: 20;
+    overflow-y: auto;
+  }
+  .final-overlay.show {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .final-overlay-header {
+    font-family: "Bangers";
+    font-size: 1rem;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: .3rem;
+    flex-shrink: 0;
+  }
+  .fo-row {
+    display: flex; align-items: center; gap: .75rem;
+    background: radial-gradient(circle at top left, rgba(255,255,255,.08), rgba(6,2,22,.96));
+    border: 1px solid var(--border);
+    border-radius: .9rem;
+    padding: .7rem 1rem;
+    box-shadow: 0 8px 20px rgba(0,0,0,.45);
+    flex-shrink: 0;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity .35s ease, transform .35s ease;
+  }
+  .fo-row.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .fo-num {
+    font-family: "Bangers"; font-size: 1.6rem; letter-spacing: .06em;
+    color: var(--accent); min-width: 24px;
+  }
+  .fo-name { font-weight: 800; font-size: .9rem; }
+
+  /* fade out wheel elements when overlay appears */
+  .wheel-wrap.done canvas,
+  .wheel-wrap.done .pointer,
+  .wheel-wrap.done .hub {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  /* ── SPIN BUTTON ── */
   .spin-btn {
     display: inline-flex;
     align-items: center; justify-content: center;
@@ -137,8 +198,9 @@
   .spin-btn:hover { opacity:.9; transform:translateY(-1px); }
   .spin-btn:active { transform:translateY(0); }
   .spin-btn:disabled { opacity:.35; cursor:not-allowed; transform:none; }
+  .spin-btn.hidden { display: none; }
 
-  /* RESULT BANNER */
+  /* ── RESULT BANNER ── */
   .result-banner {
     display: none;
     align-items: center; gap: .9rem;
@@ -151,6 +213,7 @@
     animation: slideIn .35s ease;
   }
   .result-banner.show { display: flex; }
+  .result-banner.hidden { display: none !important; }
   .rb-num {
     font-family: "Bangers"; font-size: 2.2rem; letter-spacing: .08em;
     color: var(--accent); min-width: 30px;
@@ -162,33 +225,7 @@
     to   { opacity:1; transform:translateY(0); }
   }
 
-  /* FINAL ORDER */
-  .final-wrap {
-    display: none;
-    flex-direction: column; gap: .55rem;
-    width: 100%; max-width: 520px;
-  }
-  .final-wrap.show { display: flex; }
-  .final-header {
-    font-family: "Bangers"; font-size: 1rem; letter-spacing: .16em;
-    text-transform: uppercase; color: var(--muted); margin-bottom: .15rem;
-  }
-  .fo-row {
-    display: flex; align-items: center; gap: .75rem;
-    background: radial-gradient(circle at top left, rgba(255,255,255,.08), rgba(6,2,22,.96));
-    border: 1px solid var(--border);
-    border-radius: .9rem;
-    padding: .75rem 1rem;
-    box-shadow: 0 18px 35px rgba(0,0,0,.45);
-    animation: slideIn .3s ease;
-  }
-  .fo-num {
-    font-family: "Bangers"; font-size: 1.5rem; letter-spacing: .06em;
-    color: var(--accent); min-width: 22px;
-  }
-  .fo-name { font-weight: 800; font-size: .88rem; }
-
-  /* SIDEBAR */
+  /* ── SIDEBAR ── */
   .sidebar {
     width: 256px; flex-shrink: 0;
     display: flex; flex-direction: column; gap: .9rem;
@@ -209,8 +246,6 @@
   }
 
   .team-list { display: flex; flex-direction: column; gap: .42rem; }
-
-  /* no highlighting at all — just done vs normal */
   .team-item {
     display: flex; align-items: center; gap: .6rem;
     padding: .6rem .85rem;
@@ -221,14 +256,10 @@
     font-size: .83rem; font-weight: 700;
     transition: opacity .2s;
   }
-  .team-item.done {
-    opacity: .3;
-    text-decoration: line-through;
-  }
+  .team-item.done { opacity: .3; text-decoration: line-through; }
   .team-dot {
     width: 7px; height: 7px; border-radius: 50%;
-    flex-shrink: 0;
-    background: var(--accent-2);
+    flex-shrink: 0; background: var(--accent-2);
   }
   .team-item.done .team-dot { background: rgba(255,255,255,.2); }
   .team-name-text { flex: 1; }
@@ -267,20 +298,6 @@
   }
   .counter span { color: var(--accent); }
 
-  .reset-link {
-    text-align: center; margin-top: .4rem;
-  }
-  .reset-link button {
-    background: none; border: none;
-    color: var(--muted); font-family: "Inter"; font-size: .75rem;
-    font-weight: 700; cursor: pointer; letter-spacing: .06em;
-    text-transform: uppercase;
-    text-decoration: underline; text-underline-offset: 3px;
-    transition: color .15s;
-  }
-  .reset-link button:hover { color: var(--ink); }
-
-  /* sparkles */
   .sparkle {
     position: fixed; pointer-events: none; z-index: 999;
     animation: sparkleFall 1.3s ease-out forwards; font-size: 15px;
@@ -303,12 +320,16 @@
 
 <div class="layout">
 
-  <!-- WHEEL -->
   <div class="wheel-section">
-    <div class="wheel-wrap">
+    <div class="wheel-wrap" id="wheelWrap">
       <canvas id="wheelCanvas" width="600" height="600"></canvas>
-      <div class="pointer"></div>
-      <div class="hub" onclick="doSpin()">SPIN</div>
+      <div class="pointer" id="pointer"></div>
+      <div class="hub" id="hub" onclick="doSpin()">SPIN</div>
+
+      <!-- Final order overlays the wheel when done -->
+      <div class="final-overlay" id="finalOverlay">
+        <div class="final-overlay-header">✦ &nbsp;Full Show Order</div>
+      </div>
     </div>
 
     <button class="spin-btn" id="spinBtn" onclick="doSpin()">Spin the Wheel</button>
@@ -317,13 +338,8 @@
       <div class="rb-num" id="rbNum"></div>
       <div class="rb-name" id="rbName"></div>
     </div>
-
-    <div class="final-wrap" id="finalWrap">
-      <div class="final-header">✦ &nbsp;Full Show Order</div>
-    </div>
   </div>
 
-  <!-- SIDEBAR -->
   <div class="sidebar">
     <div class="s-card">
       <h3>Teams</h3>
@@ -338,18 +354,12 @@
       <div class="counter">
         Revealed <span id="spinsDone">0</span> of <span id="spinsTotal">0</span>
       </div>
-      <div class="reset-link">
-        <button onclick="buildOrder()">Reset</button>
-      </div>
     </div>
   </div>
 
 </div>
 
 <script>
-// ═══════════════════════════
-//  CONFIG
-// ═══════════════════════════
 const LOCKED_LAST = "Lok Naach";
 
 let teams = [
@@ -365,9 +375,6 @@ const SLICE_COLORS = [
   "#1a0a4a","#0f0535","#231060","#100530",
 ];
 
-// ═══════════════════════════
-//  STATE
-// ═══════════════════════════
 let spinOrder   = [];
 let currentSpin = 0;
 let spinning    = false;
@@ -391,23 +398,28 @@ function buildOrder() {
   fullResults  = [];
   angle        = 0;
 
+  // reset overlay
+  const overlay = document.getElementById('finalOverlay');
+  overlay.classList.remove('show');
+  while (overlay.children.length > 1) overlay.removeChild(overlay.lastChild);
+
+  // reset wheel wrap
+  document.getElementById('wheelWrap').classList.remove('done');
+
   document.getElementById('resultBanner').classList.remove('show');
-  const fw = document.getElementById('finalWrap');
-  while (fw.children.length > 1) fw.removeChild(fw.lastChild);
-  fw.classList.remove('show');
+  document.getElementById('resultBanner').classList.remove('hidden');
 
   const btn = document.getElementById('spinBtn');
   btn.textContent = 'Spin the Wheel';
   btn.disabled = false;
+  btn.classList.remove('hidden');
 
   updateCounter();
   renderTeamList();
   drawWheel();
 }
 
-// ═══════════════════════════
-//  CANVAS
-// ═══════════════════════════
+// ── CANVAS ──
 const canvas = document.getElementById('wheelCanvas');
 const ctx    = canvas.getContext('2d');
 const CX = canvas.width  / 2;
@@ -424,14 +436,12 @@ function lighten(hex, amt) {
 
 function drawWheel(highlightIdx = -1) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-
   const remaining = spinOrder.slice(currentSpin);
   const n = remaining.length;
   if (n === 0) return;
 
   const slice = (2 * Math.PI) / n;
 
-  // outer glow ring
   ctx.beginPath();
   ctx.arc(CX, CY, R + 8, 0, 2 * Math.PI);
   ctx.strokeStyle = 'rgba(123,60,255,0.5)';
@@ -470,7 +480,6 @@ function drawWheel(highlightIdx = -1) {
     ctx.lineWidth = 1.5;
     ctx.stroke();
 
-    // label
     ctx.save();
     ctx.translate(CX, CY);
     ctx.rotate(start + slice / 2);
@@ -492,12 +501,16 @@ function drawWheel(highlightIdx = -1) {
   }
 }
 
-// ═══════════════════════════
-//  SPIN
-// ═══════════════════════════
+// ── SPIN ──
 function doSpin() {
   if (spinning) return;
-  if (currentSpin >= spinOrder.length) { buildOrder(); return; }
+  if (currentSpin >= spinOrder.length) return;
+
+  // If only 1 team left, auto-resolve without spinning
+  if (spinOrder.length - currentSpin === 1) {
+    onComplete(spinOrder[currentSpin]);
+    return;
+  }
 
   spinning = true;
   document.getElementById('spinBtn').disabled = true;
@@ -534,6 +547,7 @@ function doSpin() {
   })(t0);
 }
 
+// ── ON COMPLETE ──
 function onComplete(team) {
   spinning = false;
   currentSpin++;
@@ -541,6 +555,7 @@ function onComplete(team) {
   const isLast = currentSpin === spinOrder.length;
   fullResults.push({ pos, team });
 
+  // update banner
   document.getElementById('rbNum').textContent  = pos;
   document.getElementById('rbName').textContent = team;
   document.getElementById('resultBanner').classList.add('show');
@@ -552,34 +567,53 @@ function onComplete(team) {
   setTimeout(() => {
     drawWheel();
     const btn = document.getElementById('spinBtn');
-    btn.disabled = false;
-    btn.textContent = isLast ? 'Reset & Go Again' : 'Spin the Wheel';
-    if (isLast) showFinalOrder();
+
+    if (isLast) {
+      // hide spin button and banner, show overlay
+      btn.classList.add('hidden');
+      document.getElementById('resultBanner').classList.add('hidden');
+      showFinalOverlay();
+    } else {
+      btn.disabled = false;
+      btn.textContent = 'Spin the Wheel';
+    }
   }, 500);
 }
 
-function showFinalOrder() {
-  const wrap = document.getElementById('finalWrap');
-  while (wrap.children.length > 1) wrap.removeChild(wrap.lastChild);
+// ── FINAL OVERLAY ──
+function showFinalOverlay() {
+  const wrap = document.getElementById('wheelWrap');
+  const overlay = document.getElementById('finalOverlay');
+
+  // fade out wheel
+  wrap.classList.add('done');
+
+  // build rows (hidden initially)
+  while (overlay.children.length > 1) overlay.removeChild(overlay.lastChild);
   fullResults.forEach(({ pos, team }) => {
     const row = document.createElement('div');
     row.className = 'fo-row';
-    row.style.animationDelay = `${(pos - 1) * 70}ms`;
     row.innerHTML = `<div class="fo-num">${pos}</div><div class="fo-name">${team}</div>`;
-    wrap.appendChild(row);
+    overlay.appendChild(row);
   });
-  wrap.classList.add('show');
+
+  // show overlay after wheel fades
+  setTimeout(() => {
+    overlay.classList.add('show');
+    // stagger row reveals
+    const rows = overlay.querySelectorAll('.fo-row');
+    rows.forEach((r, i) => {
+      setTimeout(() => r.classList.add('visible'), 200 + i * 120);
+    });
+  }, 450);
 }
 
-// ═══════════════════════════
-//  SIDEBAR — no "next" hint
-// ═══════════════════════════
+// ── SIDEBAR ──
 function renderTeamList() {
   const el = document.getElementById('teamList');
   el.innerHTML = '';
   teams.forEach(t => {
     const idx  = spinOrder.indexOf(t);
-    // only mark as done once it's been revealed — never highlight "next"
     const done = idx !== -1 && idx < currentSpin;
     const item = document.createElement('div');
     item.className = 'team-item' + (done ? ' done' : '');
