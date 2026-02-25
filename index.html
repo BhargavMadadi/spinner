@@ -70,7 +70,6 @@
     min-width: 0;
   }
 
-  /* The wheel-wrap is the anchor for the overlay */
   .wheel-wrap {
     position: relative;
     width: min(520px, 90vw);
@@ -119,7 +118,7 @@
     box-shadow: 0 0 22px rgba(114,255,155,.25);
   }
 
-  /* ── FINAL ORDER OVERLAY — sits on top of wheel ── */
+  /* ── FINAL OVERLAY ── */
   .final-overlay {
     position: absolute;
     inset: 0;
@@ -172,7 +171,6 @@
   }
   .fo-name { font-weight: 800; font-size: .9rem; }
 
-  /* fade out wheel elements when overlay appears */
   .wheel-wrap.done canvas,
   .wheel-wrap.done .pointer,
   .wheel-wrap.done .hub {
@@ -298,6 +296,27 @@
   }
   .counter span { color: var(--accent); }
 
+  /* ── FAILSAFE TOAST (invisible confirmation for you only) ── */
+  .failsafe-toast {
+    position: fixed;
+    bottom: 24px; right: 24px;
+    background: rgba(6,2,22,0.92);
+    border: 1px solid rgba(114,255,155,.3);
+    border-radius: .8rem;
+    padding: .6rem 1rem;
+    font-size: .75rem;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: .06em;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .25s ease;
+    z-index: 9999;
+  }
+  .failsafe-toast.show {
+    opacity: 1;
+  }
+
   .sparkle {
     position: fixed; pointer-events: none; z-index: 999;
     animation: sparkleFall 1.3s ease-out forwards; font-size: 15px;
@@ -325,8 +344,6 @@
       <canvas id="wheelCanvas" width="600" height="600"></canvas>
       <div class="pointer" id="pointer"></div>
       <div class="hub" id="hub" onclick="doSpin()">SPIN</div>
-
-      <!-- Final order overlays the wheel when done -->
       <div class="final-overlay" id="finalOverlay">
         <div class="final-overlay-header">✦ &nbsp;Full Show Order</div>
       </div>
@@ -352,17 +369,24 @@
     </div>
     <div class="s-card">
       <div class="counter">
-        Revealed <span id="spinsDone">0</span> of <span id="spinsTotal">0</span>
+        Spin <span id="spinsDone">0</span> of <span id="spinsTotal">3</span>
       </div>
     </div>
   </div>
 
 </div>
 
-<script>
-const LOCKED_LAST = "Lok Naach";
+<!-- invisible toast only you can see (bottom-right corner) -->
+<div class="failsafe-toast" id="failsafeToast">✓ Failsafe armed</div>
 
-let teams = [
+<script>
+// ═══════════════════════════════════════════════
+//  CONFIG
+// ═══════════════════════════════════════════════
+const LOCKED_LAST  = "Lok Naach";
+const TOTAL_SPINS  = 3; // captains want 3 spins
+
+const ALL_TEAMS = [
   "Stanford Bhangra",
   "Classic City Bhangra",
   "Mehfil Mitraan Di Bhangra",
@@ -370,16 +394,24 @@ let teams = [
   "Birmingham's Blazin' Bhangra",
 ];
 
+// The 3 spin results we'll force:
+//   Spin 1 → random non-Lok-Naach team
+//   Spin 2 → random non-Lok-Naach team (different from spin 1)
+//   Spin 3 → Lok Naach
+// We pre-generate the rigged sequence on load (and on failsafe).
+
 const SLICE_COLORS = [
   "#1e0d5e","#14073b","#2a1466","#0b0624",
   "#1a0a4a","#0f0535","#231060","#100530",
 ];
 
-let spinOrder   = [];
-let currentSpin = 0;
-let spinning    = false;
-let angle       = 0;
-let fullResults = [];
+// ═══════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════
+let riggedSequence = []; // [spin1result, spin2result, spin3result]
+let spinCount      = 0;  // how many spins completed
+let spinning       = false;
+let angle          = 0;
 
 function shuffle(arr) {
   const a = [...arr];
@@ -390,28 +422,30 @@ function shuffle(arr) {
   return a;
 }
 
-function buildOrder() {
-  const others = teams.filter(t => t !== LOCKED_LAST);
-  const rand   = shuffle(others);
-  spinOrder    = teams.includes(LOCKED_LAST) ? [...rand, LOCKED_LAST] : rand;
-  currentSpin  = 0;
-  fullResults  = [];
-  angle        = 0;
+// Build the rigged 3-pick sequence fresh
+function armSequence() {
+  const others   = ALL_TEAMS.filter(t => t !== LOCKED_LAST);
+  const shuffled = shuffle(others);
+  // picks 2 distinct non-Lok-Naach teams for spins 1 & 2, Lok Naach for spin 3
+  riggedSequence = [shuffled[0], shuffled[1], LOCKED_LAST];
+}
+
+function init() {
+  armSequence();
+  spinCount = 0;
+  angle     = 0;
 
   // reset overlay
   const overlay = document.getElementById('finalOverlay');
   overlay.classList.remove('show');
   while (overlay.children.length > 1) overlay.removeChild(overlay.lastChild);
-
-  // reset wheel wrap
   document.getElementById('wheelWrap').classList.remove('done');
 
-  document.getElementById('resultBanner').classList.remove('show');
-  document.getElementById('resultBanner').classList.remove('hidden');
+  document.getElementById('resultBanner').classList.remove('show','hidden');
 
   const btn = document.getElementById('spinBtn');
   btn.textContent = 'Spin the Wheel';
-  btn.disabled = false;
+  btn.disabled    = false;
   btn.classList.remove('hidden');
 
   updateCounter();
@@ -419,7 +453,9 @@ function buildOrder() {
   drawWheel();
 }
 
-// ── CANVAS ──
+// ═══════════════════════════════════════════════
+//  CANVAS — always shows ALL 5 teams on wheel
+// ═══════════════════════════════════════════════
 const canvas = document.getElementById('wheelCanvas');
 const ctx    = canvas.getContext('2d');
 const CX = canvas.width  / 2;
@@ -434,14 +470,15 @@ function lighten(hex, amt) {
   return `rgb(${r},${g},${b})`;
 }
 
-function drawWheel(highlightIdx = -1) {
+function drawWheel(highlightName = null) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  const remaining = spinOrder.slice(currentSpin);
-  const n = remaining.length;
-  if (n === 0) return;
 
-  const slice = (2 * Math.PI) / n;
+  // All 5 teams always stay on the wheel (no removal between spins)
+  const slices = ALL_TEAMS;
+  const n      = slices.length;
+  const slice  = (2 * Math.PI) / n;
 
+  // outer glow ring
   ctx.beginPath();
   ctx.arc(CX, CY, R + 8, 0, 2 * Math.PI);
   ctx.strokeStyle = 'rgba(123,60,255,0.5)';
@@ -457,7 +494,7 @@ function drawWheel(highlightIdx = -1) {
   for (let i = 0; i < n; i++) {
     const start = angle + i * slice;
     const end   = start + slice;
-    const isHL  = (i === highlightIdx);
+    const isHL  = (slices[i] === highlightName);
 
     ctx.beginPath();
     ctx.moveTo(CX, CY);
@@ -467,8 +504,8 @@ function drawWheel(highlightIdx = -1) {
     if (isHL) {
       ctx.fillStyle = '#7b3cff';
     } else {
-      const gx = CX + Math.cos(start + slice / 2) * R * 0.5;
-      const gy = CY + Math.sin(start + slice / 2) * R * 0.5;
+      const gx   = CX + Math.cos(start + slice / 2) * R * 0.5;
+      const gy   = CY + Math.sin(start + slice / 2) * R * 0.5;
       const grad = ctx.createRadialGradient(CX, CY, 0, gx, gy, R * 0.85);
       grad.addColorStop(0, lighten(SLICE_COLORS[i % SLICE_COLORS.length], 0.14));
       grad.addColorStop(1, SLICE_COLORS[i % SLICE_COLORS.length]);
@@ -480,6 +517,7 @@ function drawWheel(highlightIdx = -1) {
     ctx.lineWidth = 1.5;
     ctx.stroke();
 
+    // label
     ctx.save();
     ctx.translate(CX, CY);
     ctx.rotate(start + slice / 2);
@@ -490,38 +528,34 @@ function drawWheel(highlightIdx = -1) {
     ctx.shadowColor = 'rgba(0,0,0,0.95)';
     ctx.shadowBlur  = 5;
 
-    let label = remaining[i];
+    let label = slices[i];
     const maxW = R * 0.68;
     while (ctx.measureText(label).width > maxW && label.length > 2)
       label = label.slice(0, -1);
-    if (label !== remaining[i]) label += '…';
+    if (label !== slices[i]) label += '…';
 
     ctx.fillText(label, R - 18, fs / 3);
     ctx.restore();
   }
 }
 
-// ── SPIN ──
+// ═══════════════════════════════════════════════
+//  SPIN — lands on pre-determined target
+// ═══════════════════════════════════════════════
 function doSpin() {
-  if (spinning) return;
-  if (currentSpin >= spinOrder.length) return;
-
-  // If only 1 team left, auto-resolve without spinning
-  if (spinOrder.length - currentSpin === 1) {
-    onComplete(spinOrder[currentSpin]);
-    return;
-  }
+  if (spinning || spinCount >= TOTAL_SPINS) return;
 
   spinning = true;
   document.getElementById('spinBtn').disabled = true;
   document.getElementById('resultBanner').classList.remove('show');
 
-  const remaining = spinOrder.slice(currentSpin);
-  const n         = remaining.length;
-  const target    = spinOrder[currentSpin];
-  const targetIdx = remaining.indexOf(target);
+  const target    = riggedSequence[spinCount]; // who we're landing on this spin
+  const slices    = ALL_TEAMS;
+  const n         = slices.length;
+  const targetIdx = slices.indexOf(target);
 
   const slice       = (2 * Math.PI) / n;
+  // pointer is on the RIGHT (east = 0). Land target slice middle there.
   const targetAngle = -(targetIdx * slice + slice / 2);
   let needed = ((targetAngle - angle) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
 
@@ -534,29 +568,28 @@ function doSpin() {
   function ease(t) { return 1 - Math.pow(1 - t, 4); }
 
   (function tick(now) {
-    const t  = Math.min((now - t0) / duration, 1);
-    angle    = startAngle + total * ease(t);
+    const t = Math.min((now - t0) / duration, 1);
+    angle   = startAngle + total * ease(t);
     drawWheel();
     if (t < 1) {
       requestAnimationFrame(tick);
     } else {
       angle = (startAngle + total) % (2 * Math.PI);
-      drawWheel(targetIdx);
+      drawWheel(target);
       setTimeout(() => onComplete(target), 350);
     }
   })(t0);
 }
 
-// ── ON COMPLETE ──
+// ═══════════════════════════════════════════════
+//  ON COMPLETE
+// ═══════════════════════════════════════════════
 function onComplete(team) {
   spinning = false;
-  currentSpin++;
-  const pos    = currentSpin;
-  const isLast = currentSpin === spinOrder.length;
-  fullResults.push({ pos, team });
+  spinCount++;
 
-  // update banner
-  document.getElementById('rbNum').textContent  = pos;
+  // show result banner
+  document.getElementById('rbNum').textContent  = spinCount;
   document.getElementById('rbName').textContent = team;
   document.getElementById('resultBanner').classList.add('show');
 
@@ -564,90 +597,103 @@ function onComplete(team) {
   renderTeamList();
   spawnSparkles();
 
+  const isLast = spinCount === TOTAL_SPINS;
+
   setTimeout(() => {
     drawWheel();
     const btn = document.getElementById('spinBtn');
 
     if (isLast) {
-      // hide spin button and banner, show overlay
       btn.classList.add('hidden');
       document.getElementById('resultBanner').classList.add('hidden');
       showFinalOverlay();
     } else {
       btn.disabled = false;
-      // if next spin is the last one, update button label
-      btn.textContent = (spinOrder.length - currentSpin === 1)
+      // label the final spin button clearly
+      btn.textContent = spinCount === TOTAL_SPINS - 1
         ? 'Show Full Show Order'
         : 'Spin the Wheel';
     }
   }, 500);
 }
 
-// ── FINAL OVERLAY ──
+// ═══════════════════════════════════════════════
+//  FINAL OVERLAY
+// ═══════════════════════════════════════════════
 function showFinalOverlay() {
-  const wrap = document.getElementById('wheelWrap');
+  const wrap    = document.getElementById('wheelWrap');
   const overlay = document.getElementById('finalOverlay');
 
-  // fade out wheel
   wrap.classList.add('done');
 
-  // build rows (hidden initially)
   while (overlay.children.length > 1) overlay.removeChild(overlay.lastChild);
-  fullResults.forEach(({ pos, team }) => {
+
+  // Build final order:
+  // spin 1 result = 1st, spin 2 result = 2nd, spin 3 (Lok Naach) = 3rd
+  riggedSequence.forEach((team, i) => {
     const row = document.createElement('div');
     row.className = 'fo-row';
-    row.innerHTML = `<div class="fo-num">${pos}</div><div class="fo-name">${team}</div>`;
+    row.innerHTML = `<div class="fo-num">${i + 1}</div><div class="fo-name">${team}</div>`;
     overlay.appendChild(row);
   });
 
-  // show overlay after wheel fades
   setTimeout(() => {
     overlay.classList.add('show');
-    // stagger row reveals
     const rows = overlay.querySelectorAll('.fo-row');
     rows.forEach((r, i) => {
-      setTimeout(() => r.classList.add('visible'), 200 + i * 120);
+      setTimeout(() => r.classList.add('visible'), 200 + i * 140);
     });
+    spawnSparkles();
   }, 450);
 }
 
-// ── SIDEBAR ──
+// ═══════════════════════════════════════════════
+//  SIDEBAR — shows all teams, no highlighting
+// ═══════════════════════════════════════════════
 function renderTeamList() {
   const el = document.getElementById('teamList');
   el.innerHTML = '';
-  teams.forEach(t => {
-    const idx  = spinOrder.indexOf(t);
-    const done = idx !== -1 && idx < currentSpin;
+  ALL_TEAMS.forEach(t => {
+    // mark as "done" only if this team was already picked in a past spin
+    const pickedInPastSpin = riggedSequence.slice(0, spinCount).includes(t);
     const item = document.createElement('div');
-    item.className = 'team-item' + (done ? ' done' : '');
+    item.className = 'team-item' + (pickedInPastSpin ? ' done' : '');
     item.innerHTML = `
       <div class="team-dot"></div>
       <span class="team-name-text">${t}</span>
-      <button class="remove-btn" onclick="removeTeam(${JSON.stringify(t)})">✕</button>
     `;
     el.appendChild(item);
   });
 }
 
-function addTeam() {
-  const inp  = document.getElementById('newTeamInput');
-  const name = inp.value.trim();
-  if (!name || teams.includes(name)) return;
-  teams.push(name);
-  inp.value = '';
-  buildOrder();
-}
-
-function removeTeam(name) {
-  if (teams.length <= 2) return;
-  teams = teams.filter(t => t !== name);
-  buildOrder();
-}
-
 function updateCounter() {
-  document.getElementById('spinsDone').textContent  = currentSpin;
-  document.getElementById('spinsTotal').textContent = spinOrder.length;
+  document.getElementById('spinsDone').textContent = spinCount;
+  document.getElementById('spinsTotal').textContent = TOTAL_SPINS;
 }
+
+// ═══════════════════════════════════════════════
+//  FAILSAFE — press Shift+L to silently re-arm
+//  (invisible, no button on screen)
+// ═══════════════════════════════════════════════
+document.addEventListener('keydown', (e) => {
+  if (e.shiftKey && e.key === 'L') {
+    // Re-arm the sequence without resetting visual state
+    // so if they refresh and you haven't spun yet, just re-lock Lok Naach last
+    armSequence();
+
+    // brief toast in bottom-right corner for you only
+    const toast = document.getElementById('failsafeToast');
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 2000);
+  }
+});
+
+// ═══════════════════════════════════════════════
+//  TEAM LIST — no add/remove in 3-spin mode
+//  (fixed teams, no editing needed)
+// ═══════════════════════════════════════════════
+function addTeam() {} // disabled
+function removeTeam() {} // disabled
 
 function spawnSparkles() {
   const e = ['✦','★','✧','◆','✨'];
@@ -664,7 +710,8 @@ function spawnSparkles() {
   }
 }
 
-buildOrder();
+// ── INIT ──
+init();
 canvas.addEventListener('click', doSpin);
 </script>
 </body>
