@@ -675,15 +675,16 @@ document.addEventListener('keydown', (e) => {
     buildRoundOrder();
 
     const blob = document.getElementById('bgTr');
-    // Pulses noticeably brighter for ~1.5s then fades back
-    blob.style.transition = 'opacity 0.25s ease, transform 0.25s ease';
-    blob.style.opacity = '1.0';
-    blob.style.transform = 'scale(1.22)';
+    // Barely perceptible swell — looks like natural ambient breathing
+    blob.style.transition = 'opacity 2s ease, transform 2s ease';
+    blob.style.opacity = '0.88';
+    blob.style.transform = 'scale(1.05)';
     if (failsafeTimeout) clearTimeout(failsafeTimeout);
     failsafeTimeout = setTimeout(() => {
+      blob.style.transition = 'opacity 3.5s ease, transform 3.5s ease';
       blob.style.opacity = '0.7';
       blob.style.transform = 'scale(1)';
-    }, 1500);
+    }, 2500);
   }
 });
 
