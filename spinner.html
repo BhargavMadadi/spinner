@@ -1,0 +1,505 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AKD Order Spinner</title>
+  <style>
+    :root{
+      --bg0:#060814;
+      --bg1:#0b1230;
+      --card: rgba(255,255,255,.06);
+      --card2: rgba(255,255,255,.10);
+      --stroke: rgba(255,255,255,.14);
+      --text: rgba(255,255,255,.92);
+      --muted: rgba(255,255,255,.70);
+      --accent:#8be9fd;
+      --accent2:#bd93f9;
+      --good:#50fa7b;
+      --warn:#ffb86c;
+      --bad:#ff5555;
+      --shadow: 0 18px 60px rgba(0,0,0,.45);
+      --r: 18px;
+      --font: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; min-height:100vh; font-family:var(--font); color:var(--text);
+      background:
+        radial-gradient(1200px 700px at 20% 10%, rgba(189,147,249,.20), transparent 60%),
+        radial-gradient(1000px 600px at 80% 15%, rgba(139,233,253,.18), transparent 55%),
+        radial-gradient(900px 700px at 60% 90%, rgba(80,250,123,.08), transparent 55%),
+        linear-gradient(180deg, var(--bg0), var(--bg1));
+      overflow-x:hidden;
+    }
+    .stars::before, .stars::after{
+      content:""; position:fixed; inset:-200px; pointer-events:none;
+      background-image:
+        radial-gradient(2px 2px at 20px 30px, rgba(255,255,255,.35) 50%, transparent 52%),
+        radial-gradient(1px 1px at 120px 90px, rgba(255,255,255,.25) 50%, transparent 52%),
+        radial-gradient(1px 1px at 220px 140px, rgba(255,255,255,.22) 50%, transparent 52%),
+        radial-gradient(2px 2px at 320px 210px, rgba(255,255,255,.28) 50%, transparent 52%),
+        radial-gradient(1px 1px at 420px 260px, rgba(255,255,255,.20) 50%, transparent 52%);
+      background-size: 520px 320px;
+      opacity:.55;
+      filter: blur(.2px);
+      animation: drift 28s linear infinite;
+    }
+    .stars::after{
+      opacity:.35;
+      background-size: 720px 420px;
+      animation-duration: 40s;
+    }
+    @keyframes drift{ from{transform:translateY(0)} to{transform:translateY(120px)} }
+
+    .wrap{max-width:1050px; margin:0 auto; padding:28px 18px 56px;}
+    header{
+      display:flex; align-items:center; justify-content:space-between; gap:16px;
+      margin:10px 0 22px;
+    }
+    .brand{
+      display:flex; flex-direction:column; gap:6px;
+    }
+    .brand h1{
+      margin:0; font-size:20px; letter-spacing:.4px; font-weight:800;
+    }
+    .brand p{margin:0; color:var(--muted); font-size:13px}
+    .pill{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:9px 12px; border-radius:999px;
+      background:rgba(255,255,255,.06);
+      border:1px solid var(--stroke);
+      color:var(--muted);
+      font-size:12px;
+    }
+    .grid{
+      display:grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap:18px;
+    }
+    @media (max-width: 900px){
+      .grid{grid-template-columns:1fr}
+    }
+    .card{
+      background: linear-gradient(180deg, var(--card), rgba(255,255,255,.04));
+      border:1px solid var(--stroke);
+      border-radius:var(--r);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+      overflow:hidden;
+    }
+    .card .hd{
+      padding:14px 16px;
+      border-bottom:1px solid rgba(255,255,255,.08);
+      display:flex; align-items:center; justify-content:space-between; gap:12px;
+    }
+    .card .hd .title{
+      font-weight:800; letter-spacing:.3px; font-size:14px;
+      display:flex; align-items:center; gap:10px;
+    }
+    .dot{width:10px;height:10px;border-radius:50%;
+      background: radial-gradient(circle at 30% 30%, var(--accent), rgba(139,233,253,.15));
+      box-shadow:0 0 18px rgba(139,233,253,.35);
+    }
+    .card .bd{padding:16px}
+    textarea{
+      width:100%;
+      min-height:160px;
+      resize:vertical;
+      padding:12px 12px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.18);
+      color:var(--text);
+      outline:none;
+      font-size:13px;
+      line-height:1.4;
+    }
+    textarea:focus{border-color: rgba(139,233,253,.35); box-shadow:0 0 0 4px rgba(139,233,253,.10)}
+    .row{display:flex; flex-wrap:wrap; gap:10px; margin-top:12px}
+    .btn{
+      cursor:pointer;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.06);
+      color:var(--text);
+      padding:10px 12px;
+      border-radius:14px;
+      font-weight:700;
+      letter-spacing:.2px;
+      transition: transform .08s ease, background .15s ease, border-color .15s ease;
+      user-select:none;
+    }
+    .btn:hover{background: rgba(255,255,255,.10)}
+    .btn:active{transform: translateY(1px)}
+    .btn.primary{
+      border-color: rgba(139,233,253,.35);
+      background: linear-gradient(180deg, rgba(139,233,253,.18), rgba(139,233,253,.08));
+    }
+    .btn.warn{
+      border-color: rgba(255,184,108,.35);
+      background: linear-gradient(180deg, rgba(255,184,108,.16), rgba(255,184,108,.06));
+    }
+    .btn.good{
+      border-color: rgba(80,250,123,.35);
+      background: linear-gradient(180deg, rgba(80,250,123,.14), rgba(80,250,123,.06));
+    }
+    .small{font-size:12px; color:var(--muted); margin-top:10px}
+    .stage{
+      display:flex; flex-direction:column; gap:14px;
+      padding:16px;
+    }
+    .wheelWrap{
+      position:relative;
+      width:100%;
+      aspect-ratio: 1 / 1;
+      max-height: 420px;
+      margin:0 auto;
+      display:grid; place-items:center;
+    }
+    canvas{width:100%; height:100%;}
+    .pointer{
+      position:absolute;
+      top:8px; left:50%;
+      transform: translateX(-50%);
+      width:0; height:0;
+      border-left:14px solid transparent;
+      border-right:14px solid transparent;
+      border-top:22px solid rgba(255,255,255,.85);
+      filter: drop-shadow(0 8px 18px rgba(0,0,0,.55));
+    }
+    .result{
+      padding:14px 14px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.18);
+    }
+    .result h3{margin:0 0 6px; font-size:14px}
+    .result ol{margin:8px 0 0 18px; padding:0; color:var(--text)}
+    .banner{
+      display:none;
+      padding:12px 14px;
+      border-radius:14px;
+      border:1px solid rgba(80,250,123,.32);
+      background: rgba(80,250,123,.10);
+      color: rgba(255,255,255,.92);
+      font-weight:700;
+    }
+    .banner.show{display:block}
+    .note{
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.4;
+    }
+  </style>
+</head>
+
+<body class="stars">
+  <div class="wrap">
+    <header>
+      <div class="brand">
+        <h1>AKD Team Order Spinner</h1>
+        <p>Fair spin first, then optional “Reveal Surprise” moment.</p>
+      </div>
+      <div class="pill">Theme: dark / glass / neon accents</div>
+    </header>
+
+    <div class="grid">
+      <section class="card">
+        <div class="hd">
+          <div class="title"><span class="dot"></span>Teams (one per line)</div>
+        </div>
+        <div class="bd">
+          <textarea id="teams" spellcheck="false">Team 1
+Team 2
+Team 3
+Team 4
+Team 5</textarea>
+
+          <div class="row">
+            <button class="btn primary" id="spinBtn">Spin (fair)</button>
+            <button class="btn warn" id="revealBtn" disabled>Reveal Surprise</button>
+            <button class="btn" id="resetBtn">Reset</button>
+          </div>
+
+          <div class="small">
+            <div class="note">
+              How it works: the first spin is genuinely random. If you have a planned surprise,
+              use “Reveal Surprise” to animate to your preplanned order and show a clear banner.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <aside class="card">
+        <div class="hd">
+          <div class="title"><span class="dot"></span>Spinner</div>
+        </div>
+        <div class="stage">
+          <div class="wheelWrap">
+            <div class="pointer"></div>
+            <canvas id="wheel" width="700" height="700"></canvas>
+          </div>
+
+          <div class="banner" id="banner">
+            Surprise reveal activated. This order was staged for the surprise.
+          </div>
+
+          <div class="result" id="resultBox">
+            <h3>Result</h3>
+            <div class="note" id="resultNote">Enter teams, then spin.</div>
+            <ol id="resultList"></ol>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <script>
+    // ---------- helpers ----------
+    function parseTeams(text){
+      return text.split("\n").map(s => s.trim()).filter(Boolean);
+    }
+    function shuffle(arr){
+      const a = arr.slice();
+      for(let i=a.length-1;i>0;i--){
+        const j = Math.floor(Math.random()*(i+1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+
+    // ---------- wheel drawing ----------
+    const canvas = document.getElementById("wheel");
+    const ctx = canvas.getContext("2d");
+    const dpr = window.devicePixelRatio || 1;
+
+    function resizeCanvas(){
+      // keep internal size as set; CSS scales it. (simple + stable)
+      drawWheel(currentTeams);
+    }
+
+    function drawWheel(teams, highlightIndex=null){
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+
+      const cx = canvas.width/2, cy = canvas.height/2;
+      const r = Math.min(cx,cy) - 18;
+
+      // backdrop ring
+      ctx.beginPath();
+      ctx.arc(cx,cy,r+8,0,Math.PI*2);
+      ctx.fillStyle = "rgba(255,255,255,.05)";
+      ctx.fill();
+
+      if(!teams.length){
+        ctx.beginPath();
+        ctx.arc(cx,cy,r,0,Math.PI*2);
+        ctx.fillStyle = "rgba(0,0,0,.22)";
+        ctx.fill();
+        ctx.fillStyle = "rgba(255,255,255,.75)";
+        ctx.font = "700 26px ui-sans-serif, system-ui";
+        ctx.textAlign="center"; ctx.textBaseline="middle";
+        ctx.fillText("Add teams to spin", cx, cy);
+        return;
+      }
+
+      const n = teams.length;
+      const step = (Math.PI*2)/n;
+
+      for(let i=0;i<n;i++){
+        const a0 = rotation + i*step;
+        const a1 = a0 + step;
+
+        // alternate glassy slices
+        const baseA = i%2===0 ? 0.10 : 0.06;
+        const hiA = (highlightIndex===i) ? 0.20 : 0.0;
+
+        ctx.beginPath();
+        ctx.moveTo(cx,cy);
+        ctx.arc(cx,cy,r,a0,a1);
+        ctx.closePath();
+        ctx.fillStyle = `rgba(255,255,255,${baseA+hiA})`;
+        ctx.fill();
+
+        ctx.strokeStyle = "rgba(255,255,255,.12)";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        // labels
+        const mid = (a0+a1)/2;
+        const tx = cx + Math.cos(mid)*(r*0.62);
+        const ty = cy + Math.sin(mid)*(r*0.62);
+
+        ctx.save();
+        ctx.translate(tx,ty);
+        ctx.rotate(mid + Math.PI/2);
+
+        ctx.fillStyle = "rgba(255,255,255,.92)";
+        ctx.font = "700 18px ui-sans-serif, system-ui";
+        ctx.textAlign="center";
+        ctx.textBaseline="middle";
+        const label = teams[i].length > 18 ? teams[i].slice(0,18) + "…" : teams[i];
+        ctx.fillText(label, 0, 0);
+        ctx.restore();
+      }
+
+      // center cap
+      ctx.beginPath();
+      ctx.arc(cx,cy,72,0,Math.PI*2);
+      ctx.fillStyle = "rgba(0,0,0,.28)";
+      ctx.fill();
+      ctx.strokeStyle = "rgba(255,255,255,.16)";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      ctx.fillStyle = "rgba(255,255,255,.88)";
+      ctx.font = "800 18px ui-sans-serif, system-ui";
+      ctx.textAlign="center"; ctx.textBaseline="middle";
+      ctx.fillText("AKD", cx, cy-10);
+
+      ctx.fillStyle = "rgba(255,255,255,.65)";
+      ctx.font = "700 12px ui-sans-serif, system-ui";
+      ctx.fillText("spin", cx, cy+14);
+    }
+
+    // ---------- spin logic ----------
+    const teamsEl = document.getElementById("teams");
+    const spinBtn = document.getElementById("spinBtn");
+    const revealBtn = document.getElementById("revealBtn");
+    const resetBtn = document.getElementById("resetBtn");
+    const resultList = document.getElementById("resultList");
+    const resultNote = document.getElementById("resultNote");
+    const banner = document.getElementById("banner");
+
+    let currentTeams = parseTeams(teamsEl.value);
+    let rotation = -Math.PI/2; // start with pointer at top
+    let spinning = false;
+
+    // Stored results
+    let fairOrder = null;
+    let surpriseOrder = null;
+
+    function renderOrder(list){
+      resultList.innerHTML = "";
+      list.forEach(t=>{
+        const li = document.createElement("li");
+        li.textContent = t;
+        resultList.appendChild(li);
+      });
+    }
+
+    function pickSurpriseOrder(teams){
+      // You edit this if you have a planned "surprise" sequence.
+      // Default: keep the same as fair (no staging), so it's safe until you change it.
+      return teams.slice();
+    }
+
+    function spinToIndex(targetIndex, durationMs=2600){
+      return new Promise(resolve=>{
+        const n = currentTeams.length;
+        if(n===0){ resolve(); return; }
+        const step = (Math.PI*2)/n;
+
+        // We want target slice centered at the pointer (top). Pointer angle is -PI/2.
+        const targetAngle = -Math.PI/2 - (targetIndex*step + step/2);
+
+        // Add extra turns for animation
+        const extraTurns = 6 + Math.random()*2;
+        const start = performance.now();
+        const startRot = rotation;
+        const endRot = targetAngle + extraTurns*Math.PI*2;
+
+        function easeOutCubic(t){ return 1 - Math.pow(1-t,3); }
+
+        function frame(now){
+          const t = Math.min(1, (now-start)/durationMs);
+          rotation = startRot + (endRot-startRot)*easeOutCubic(t);
+          drawWheel(currentTeams);
+          if(t < 1) requestAnimationFrame(frame);
+          else resolve();
+        }
+        requestAnimationFrame(frame);
+      });
+    }
+
+    function indexFromOrder(order){
+      // choose "winner" as first item in the order, spin to it
+      const winner = order[0];
+      return Math.max(0, currentTeams.indexOf(winner));
+    }
+
+    function refreshTeams(){
+      currentTeams = parseTeams(teamsEl.value);
+      drawWheel(currentTeams);
+      fairOrder = null;
+      surpriseOrder = null;
+      banner.classList.remove("show");
+      revealBtn.disabled = true;
+      resultNote.textContent = currentTeams.length ? "Ready to spin." : "Enter teams, then spin.";
+      resultList.innerHTML = "";
+    }
+
+    teamsEl.addEventListener("input", refreshTeams);
+    window.addEventListener("resize", resizeCanvas);
+
+    spinBtn.addEventListener("click", async ()=>{
+      if(spinning) return;
+      currentTeams = parseTeams(teamsEl.value);
+      if(currentTeams.length < 2){
+        resultNote.textContent = "Add at least 2 teams.";
+        return;
+      }
+      spinning = true;
+      banner.classList.remove("show");
+      resultNote.textContent = "Spinning (fair)…";
+      resultList.innerHTML = "";
+
+      fairOrder = shuffle(currentTeams);
+      const targetIndex = indexFromOrder(fairOrder);
+      await spinToIndex(targetIndex);
+
+      resultNote.textContent = "Fair order:";
+      renderOrder(fairOrder);
+
+      // Prepare surprise sequence (editable)
+      surpriseOrder = pickSurpriseOrder(currentTeams);
+
+      revealBtn.disabled = false;
+      spinning = false;
+    });
+
+    revealBtn.addEventListener("click", async ()=>{
+      if(spinning || !fairOrder) return;
+      currentTeams = parseTeams(teamsEl.value);
+      if(!currentTeams.length) return;
+
+      // IMPORTANT: This is where you set the planned reveal order.
+      // Example (edit as needed): move a specific team to last, while preserving others:
+      // surpriseOrder = shuffle(currentTeams.filter(t => t !== "CIA"));
+      // surpriseOrder.push("CIA");
+
+      if(!surpriseOrder || surpriseOrder.length !== currentTeams.length){
+        surpriseOrder = currentTeams.slice();
+      }
+
+      spinning = true;
+      resultNote.textContent = "Revealing surprise…";
+      const targetIndex = indexFromOrder(surpriseOrder);
+      await spinToIndex(targetIndex, 2000);
+
+      banner.classList.add("show");
+      resultNote.textContent = "Surprise order:";
+      renderOrder(surpriseOrder);
+
+      spinning = false;
+    });
+
+    resetBtn.addEventListener("click", ()=>{
+      teamsEl.value = "Team 1\nTeam 2\nTeam 3\nTeam 4\nTeam 5";
+      refreshTeams();
+    });
+
+    // init
+    refreshTeams();
+  </script>
+</body>
+</html>
