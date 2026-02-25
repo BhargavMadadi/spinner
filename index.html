@@ -4,282 +4,342 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AKD · Bhangra Show Order</title>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg:     #0b0b1f;
-    --bg2:    #12122e;
-    --bg3:    #1a1a40;
-    --purple: #5b4fcf;
-    --purple2:#7c6fe0;
-    --border: rgba(255,255,255,0.08);
-    --gold:   #f5c518;
-    --orange: #ff6b1a;
-    --text:   #f0edf8;
-    --muted:  #8888aa;
+    --space-1: #060216;
+    --ink:     #f9f8ff;
+    --muted:   #c7c6ff;
+    --accent:  #72ff9b;
+    --accent-2:#7b3cff;
+    --border:  rgba(255,255,255,0.14);
+    --panel:   linear-gradient(145deg,rgba(12,5,46,.95),rgba(19,10,56,.97));
   }
+
   * { margin:0; padding:0; box-sizing:border-box; }
 
   body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Poppins', sans-serif;
+    font-family: "Inter", system-ui, sans-serif;
+    color: var(--ink);
+    background:
+      radial-gradient(1200px 800px at 80% -10%, #2a1466 0%, transparent 60%),
+      radial-gradient(1000px 700px at 10% 110%,  #3a0ca3 0%, transparent 60%),
+      var(--space-1);
     min-height: 100vh;
+    overflow-x: hidden;
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 36px 20px 56px;
+    padding: 2.4rem 1.2rem 3.6rem;
   }
 
-  /* HEADER */
-  .page-header { text-align:center; margin-bottom:28px; }
-  .event-label {
-    font-size:11px; letter-spacing:4px; text-transform:uppercase;
-    color:var(--muted); margin-bottom:6px;
+  /* TITLE */
+  .page-title {
+    font-family: "Bangers";
+    font-size: clamp(2.6rem, 6vw, 4rem);
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    text-align: center;
+    margin-bottom: .3rem;
   }
-  .page-header h1 {
-    font-family:'Bebas Neue',sans-serif;
-    font-size:clamp(38px,7vw,68px);
-    letter-spacing:5px;
-    background:linear-gradient(135deg,var(--purple2),var(--gold));
-    -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
-    line-height:1;
+  .event-tag {
+    text-align: center;
+    color: var(--muted);
+    font-size: .8rem;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    font-weight: 700;
+    margin-bottom: 2rem;
   }
-  .page-header p { color:var(--muted); font-size:12px; letter-spacing:2px; text-transform:uppercase; margin-top:5px; }
 
   /* LAYOUT */
   .layout {
-    display:flex;
-    gap:28px;
-    width:100%;
-    max-width:980px;
-    align-items:flex-start;
-    justify-content:center;
+    display: flex;
+    gap: 1.6rem;
+    width: 100%;
+    max-width: 1060px;
+    align-items: flex-start;
+    justify-content: center;
   }
 
   /* WHEEL SECTION */
   .wheel-section {
-    display:flex; flex-direction:column; align-items:center; gap:16px;
-    flex:1; min-width:0;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.1rem;
+    min-width: 0;
   }
 
   .wheel-wrap {
-    position:relative;
-    width:min(420px,85vw); height:min(420px,85vw);
+    position: relative;
+    /* bigger — fills available space generously */
+    width: min(520px, 90vw);
+    height: min(520px, 90vw);
   }
 
   canvas#wheelCanvas {
-    width:100%; height:100%;
-    cursor:pointer;
-    filter:drop-shadow(0 0 24px rgba(92,79,207,0.35));
-    transition:filter .3s;
+    width: 100%; height: 100%;
+    cursor: pointer;
+    filter: drop-shadow(0 0 32px rgba(123,60,255,.38));
+    transition: filter .3s;
   }
-  canvas#wheelCanvas:hover { filter:drop-shadow(0 0 36px rgba(92,79,207,0.55)); }
+  canvas#wheelCanvas:hover {
+    filter: drop-shadow(0 0 48px rgba(123,60,255,.58));
+  }
 
-  /* pointer on right */
   .pointer {
-    position:absolute; right:-2px; top:50%;
-    transform:translateY(-50%);
-    width:0; height:0;
-    border-top:14px solid transparent;
-    border-bottom:14px solid transparent;
-    border-right:30px solid #f5c518;
-    filter:drop-shadow(0 0 5px rgba(245,197,24,.6));
-    z-index:10;
+    position: absolute;
+    right: -3px; top: 50%;
+    transform: translateY(-50%);
+    width: 0; height: 0;
+    border-top: 15px solid transparent;
+    border-bottom: 15px solid transparent;
+    border-right: 32px solid var(--accent);
+    filter: drop-shadow(0 0 6px rgba(114,255,155,.7));
+    z-index: 10;
   }
 
   .hub {
-    position:absolute; top:50%; left:50%;
-    transform:translate(-50%,-50%);
-    width:48px; height:48px; border-radius:50%;
-    background:var(--bg2); border:3px solid var(--purple2);
-    z-index:10; display:flex; align-items:center; justify-content:center;
-    font-family:'Bebas Neue',sans-serif; font-size:10px; letter-spacing:1px;
-    color:var(--purple2); cursor:pointer;
-    box-shadow:0 0 16px rgba(124,111,224,.3);
-    transition:box-shadow .2s;
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%,-50%);
+    width: 52px; height: 52px; border-radius: 50%;
+    background: radial-gradient(circle at top left, rgba(255,255,255,.12), rgba(6,2,22,.96));
+    border: 2px solid rgba(255,255,255,.22);
+    box-shadow: 0 18px 35px rgba(0,0,0,.55);
+    z-index: 10;
+    display: flex; align-items: center; justify-content: center;
+    font-family: "Bangers"; font-size: 11px; letter-spacing: 1px;
+    color: var(--ink); cursor: pointer;
+    transition: border-color .2s, box-shadow .2s;
   }
-  .hub:hover { box-shadow:0 0 26px rgba(124,111,224,.55); }
+  .hub:hover {
+    border-color: rgba(114,255,155,.4);
+    box-shadow: 0 0 22px rgba(114,255,155,.25);
+  }
 
+  /* SPIN BUTTON */
   .spin-btn {
-    background:linear-gradient(135deg,var(--purple),var(--purple2));
-    color:#fff; border:none;
-    font-family:'Bebas Neue',sans-serif;
-    font-size:22px; letter-spacing:4px;
-    padding:13px 52px; border-radius:5px; cursor:pointer;
-    box-shadow:0 4px 22px rgba(91,79,207,.4);
-    transition:transform .15s, box-shadow .15s, opacity .15s;
+    display: inline-flex;
+    align-items: center; justify-content: center;
+    padding: .8rem 2.4rem;
+    border-radius: 999px;
+    font-family: "Inter"; font-weight: 800; font-size: 1rem;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: .12s ease-out;
+    background: linear-gradient(135deg, #72ff9b, #7b3cff);
+    color: #060215;
+    box-shadow: 0 10px 26px rgba(114,255,155,.35), 0 0 60px rgba(123,60,255,.2) inset;
+    letter-spacing: .04em;
   }
-  .spin-btn:hover { transform:translateY(-2px); box-shadow:0 8px 32px rgba(91,79,207,.6); }
+  .spin-btn:hover { opacity:.9; transform:translateY(-1px); }
   .spin-btn:active { transform:translateY(0); }
-  .spin-btn:disabled { opacity:.4; cursor:not-allowed; transform:none; }
+  .spin-btn:disabled { opacity:.35; cursor:not-allowed; transform:none; }
 
-  /* result banner (shows after each spin) */
+  /* RESULT BANNER */
   .result-banner {
-    display:none; align-items:center; gap:12px;
-    background:var(--bg3); border:1px solid rgba(124,111,224,.3);
-    border-radius:8px; padding:13px 20px;
-    width:100%; max-width:420px;
-    animation:slideIn .35s ease;
+    display: none;
+    align-items: center; gap: .9rem;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 1.1rem;
+    padding: 1rem 1.5rem;
+    box-shadow: 0 18px 40px rgba(0,0,0,.6);
+    width: 100%; max-width: 520px;
+    animation: slideIn .35s ease;
   }
-  .result-banner.show { display:flex; }
-  .rb-num { font-family:'Bebas Neue',sans-serif; font-size:30px; color:var(--purple2); min-width:28px; }
-  .rb-name { font-weight:700; font-size:15px; flex:1; }
-  .rb-tag {
-    font-size:10px; padding:3px 9px; border-radius:3px;
-    border:1px solid rgba(124,111,224,.35); color:var(--purple2);
-    letter-spacing:1px; font-weight:600; text-transform:uppercase; white-space:nowrap;
+  .result-banner.show { display: flex; }
+  .rb-num {
+    font-family: "Bangers"; font-size: 2.2rem; letter-spacing: .08em;
+    color: var(--accent); min-width: 30px;
   }
+  .rb-name { font-weight: 900; font-size: 1rem; flex: 1; }
 
   @keyframes slideIn {
     from { opacity:0; transform:translateY(8px); }
     to   { opacity:1; transform:translateY(0); }
   }
 
-  /* FINAL ORDER — shown only after all spins done */
-  .final-order-wrap {
-    display:none;
-    width:100%; max-width:420px;
-    flex-direction:column; gap:6px;
+  /* FINAL ORDER */
+  .final-wrap {
+    display: none;
+    flex-direction: column; gap: .55rem;
+    width: 100%; max-width: 520px;
   }
-  .final-order-wrap.show { display:flex; }
-  .fo-header {
-    font-family:'Bebas Neue',sans-serif;
-    font-size:16px; letter-spacing:3px;
-    color:var(--muted); margin-bottom:2px;
-    text-transform:uppercase;
+  .final-wrap.show { display: flex; }
+  .final-header {
+    font-family: "Bangers"; font-size: 1rem; letter-spacing: .16em;
+    text-transform: uppercase; color: var(--muted); margin-bottom: .15rem;
   }
   .fo-row {
-    display:flex; align-items:center; gap:12px;
-    background:var(--bg2); border:1px solid var(--border);
-    border-radius:6px; padding:10px 15px;
-    animation:slideIn .3s ease;
+    display: flex; align-items: center; gap: .75rem;
+    background: radial-gradient(circle at top left, rgba(255,255,255,.08), rgba(6,2,22,.96));
+    border: 1px solid var(--border);
+    border-radius: .9rem;
+    padding: .75rem 1rem;
+    box-shadow: 0 18px 35px rgba(0,0,0,.45);
+    animation: slideIn .3s ease;
   }
-  .fo-num { font-family:'Bebas Neue',sans-serif; font-size:24px; color:var(--purple2); min-width:24px; }
-  .fo-name { font-weight:600; font-size:13px; flex:1; }
-  .fo-badge {
-    font-size:10px; padding:2px 8px; border-radius:3px;
-    background:rgba(124,111,224,.15); border:1px solid rgba(124,111,224,.35);
-    color:var(--purple2); letter-spacing:1px; font-weight:600; text-transform:uppercase;
+  .fo-num {
+    font-family: "Bangers"; font-size: 1.5rem; letter-spacing: .06em;
+    color: var(--accent); min-width: 22px;
   }
+  .fo-name { font-weight: 800; font-size: .88rem; }
 
   /* SIDEBAR */
   .sidebar {
-    width:255px; flex-shrink:0;
-    display:flex; flex-direction:column; gap:14px;
+    width: 256px; flex-shrink: 0;
+    display: flex; flex-direction: column; gap: .9rem;
+    padding-top: .2rem;
   }
 
-  .card {
-    background:var(--bg2); border:1px solid var(--border);
-    border-radius:10px; padding:16px;
+  .s-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 1.1rem;
+    padding: 1.2rem 1.2rem 1.3rem;
+    box-shadow: 0 18px 40px rgba(0,0,0,.6);
   }
-  .card h3 {
-    font-family:'Bebas Neue',sans-serif; font-size:16px;
-    letter-spacing:2px; color:var(--muted);
-    text-transform:uppercase; margin-bottom:10px;
+  .s-card h3 {
+    font-family: "Bangers"; font-size: .92rem; letter-spacing: .16em;
+    text-transform: uppercase; color: var(--muted);
+    margin-bottom: .75rem;
   }
 
-  .team-list { display:flex; flex-direction:column; gap:5px; }
+  .team-list { display: flex; flex-direction: column; gap: .42rem; }
+
+  /* no highlighting at all — just done vs normal */
   .team-item {
-    display:flex; align-items:center; gap:8px;
-    padding:7px 11px; border-radius:6px;
-    background:var(--bg3); border:1px solid var(--border);
-    font-size:12px; font-weight:500;
-    transition:border-color .2s, opacity .2s;
+    display: flex; align-items: center; gap: .6rem;
+    padding: .6rem .85rem;
+    border-radius: .9rem;
+    border: 1px solid rgba(255,255,255,.10);
+    background: rgba(255,255,255,.05);
+    box-shadow: 0 16px 34px rgba(0,0,0,.35);
+    font-size: .83rem; font-weight: 700;
+    transition: opacity .2s;
   }
-  .team-item.done { opacity:.35; text-decoration:line-through; }
-  .team-item.next { border-color:rgba(124,111,224,.5); background:rgba(124,111,224,.08); }
-  .team-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+  .team-item.done {
+    opacity: .3;
+    text-decoration: line-through;
+  }
+  .team-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    flex-shrink: 0;
+    background: var(--accent-2);
+  }
+  .team-item.done .team-dot { background: rgba(255,255,255,.2); }
+  .team-name-text { flex: 1; }
   .remove-btn {
-    margin-left:auto; background:none; border:none;
-    color:var(--muted); cursor:pointer; font-size:12px;
-    transition:color .2s; line-height:1; padding:0 2px;
+    background: none; border: none; color: rgba(255,255,255,.22);
+    cursor: pointer; font-size: .78rem; line-height: 1; padding: 0 1px;
+    transition: color .15s;
   }
-  .remove-btn:hover { color:#e07070; }
+  .remove-btn:hover { color: rgba(255,255,255,.65); }
 
-  .add-team-row { display:flex; gap:6px; margin-top:10px; }
-  .add-team-row input {
-    flex:1; background:var(--bg3); border:1px solid var(--border);
-    border-radius:4px; color:var(--text);
-    font-family:'Poppins',sans-serif; font-size:12px;
-    padding:7px 10px; outline:none; transition:border-color .2s;
+  .add-row { display: flex; gap: .45rem; margin-top: .8rem; }
+  .add-row input {
+    flex: 1;
+    background: rgba(0,0,0,.25);
+    border: 1px solid rgba(255,255,255,.12);
+    border-radius: .9rem;
+    color: var(--ink); font-family: "Inter"; font-size: .8rem;
+    padding: .52rem .8rem; outline: none;
+    transition: border-color .15s;
   }
-  .add-team-row input:focus { border-color:rgba(124,111,224,.45); }
-  .add-team-row input::placeholder { color:var(--muted); }
+  .add-row input:focus { border-color: rgba(114,255,155,.28); }
+  .add-row input::placeholder { color: var(--muted); }
   .add-btn {
-    background:var(--bg3); border:1px solid rgba(124,111,224,.35);
-    color:var(--purple2); border-radius:4px; width:32px;
-    cursor:pointer; font-size:18px;
-    display:flex; align-items:center; justify-content:center;
-    transition:background .2s;
+    background: rgba(255,255,255,.06);
+    border: 1px solid rgba(255,255,255,.14);
+    border-radius: .9rem;
+    color: var(--ink); cursor: pointer; font-size: 1.1rem;
+    width: 34px; display: flex; align-items: center; justify-content: center;
+    transition: background .15s;
   }
-  .add-btn:hover { background:rgba(124,111,224,.12); }
+  .add-btn:hover { background: rgba(255,255,255,.12); }
 
-  .spin-counter { text-align:center; font-size:12px; color:var(--muted); letter-spacing:1px; }
-  .spin-counter span { color:var(--purple2); font-weight:700; }
+  .counter {
+    text-align: center; font-size: .8rem; font-weight: 700;
+    color: var(--muted); letter-spacing: .06em;
+  }
+  .counter span { color: var(--accent); }
+
+  .reset-link {
+    text-align: center; margin-top: .4rem;
+  }
+  .reset-link button {
+    background: none; border: none;
+    color: var(--muted); font-family: "Inter"; font-size: .75rem;
+    font-weight: 700; cursor: pointer; letter-spacing: .06em;
+    text-transform: uppercase;
+    text-decoration: underline; text-underline-offset: 3px;
+    transition: color .15s;
+  }
+  .reset-link button:hover { color: var(--ink); }
 
   /* sparkles */
   .sparkle {
-    position:fixed; pointer-events:none; z-index:999;
-    animation:sparkleFall 1.3s ease-out forwards; font-size:16px;
+    position: fixed; pointer-events: none; z-index: 999;
+    animation: sparkleFall 1.3s ease-out forwards; font-size: 15px;
   }
   @keyframes sparkleFall {
-    0%   { transform:translateY(0) rotate(0deg); opacity:1; }
-    100% { transform:translateY(240px) rotate(400deg); opacity:0; }
+    0%   { transform: translateY(0) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(240px) rotate(400deg); opacity: 0; }
   }
 
-  @media(max-width:680px) {
-    .layout { flex-direction:column; align-items:center; }
-    .sidebar { width:100%; max-width:420px; }
+  @media(max-width: 720px) {
+    .layout { flex-direction: column; align-items: center; }
+    .sidebar { width: 100%; max-width: 520px; }
   }
 </style>
 </head>
 <body>
 
-<div class="page-header">
-  <div class="event-label">AAJ KA DHAMAKA · March 7, 2026</div>
-  <h1>BHANGRA SHOW ORDER</h1>
-  <p>Performance Lineup Randomizer</p>
-</div>
+<h1 class="page-title">Bhangra Show Order</h1>
+<p class="event-tag">AAJ KA DHAMAKA · March 7, 2026</p>
 
 <div class="layout">
 
   <!-- WHEEL -->
   <div class="wheel-section">
     <div class="wheel-wrap">
-      <canvas id="wheelCanvas" width="500" height="500"></canvas>
+      <canvas id="wheelCanvas" width="600" height="600"></canvas>
       <div class="pointer"></div>
       <div class="hub" onclick="doSpin()">SPIN</div>
     </div>
 
-    <button class="spin-btn" id="spinBtn" onclick="doSpin()">SPIN THE WHEEL</button>
+    <button class="spin-btn" id="spinBtn" onclick="doSpin()">Spin the Wheel</button>
 
     <div class="result-banner" id="resultBanner">
-      <div class="rb-num"  id="rbNum"></div>
+      <div class="rb-num" id="rbNum"></div>
       <div class="rb-name" id="rbName"></div>
-      <div class="rb-tag"  id="rbTag"></div>
     </div>
 
-    <!-- Final full order — only shown after all teams spun -->
-    <div class="final-order-wrap" id="finalOrderWrap">
-      <div class="fo-header">✦ &nbsp;Full Show Order</div>
+    <div class="final-wrap" id="finalWrap">
+      <div class="final-header">✦ &nbsp;Full Show Order</div>
     </div>
   </div>
 
   <!-- SIDEBAR -->
   <div class="sidebar">
-    <div class="card">
+    <div class="s-card">
       <h3>Teams</h3>
       <div class="team-list" id="teamList"></div>
-      <div class="add-team-row">
-        <input type="text" id="newTeamInput" placeholder="Add a team…" maxlength="40"
+      <div class="add-row">
+        <input type="text" id="newTeamInput" placeholder="Add a team…" maxlength="48"
                onkeydown="if(event.key==='Enter') addTeam()">
         <button class="add-btn" onclick="addTeam()">+</button>
       </div>
     </div>
-    <div class="card">
-      <div class="spin-counter">
+    <div class="s-card">
+      <div class="counter">
         Revealed <span id="spinsDone">0</span> of <span id="spinsTotal">0</span>
+      </div>
+      <div class="reset-link">
+        <button onclick="buildOrder()">Reset</button>
       </div>
     </div>
   </div>
@@ -287,10 +347,10 @@
 </div>
 
 <script>
-// ═══════════════════════════════════════════════
+// ═══════════════════════════
 //  CONFIG
-// ═══════════════════════════════════════════════
-const LOCKED_LAST = "Lok Naach"; // always last — do not change
+// ═══════════════════════════
+const LOCKED_LAST = "Lok Naach";
 
 let teams = [
   "Stanford Bhangra",
@@ -300,36 +360,29 @@ let teams = [
   "Birmingham's Blazin' Bhangra",
 ];
 
-// Slice colors — purples/navies matching AKD palette
-const COLORS = [
-  "#2d1f7a","#1e1660","#3b2e9e","#16113d",
-  "#251a7c","#120e4a","#332590","#1a1250",
+const SLICE_COLORS = [
+  "#1e0d5e","#14073b","#2a1466","#0b0624",
+  "#1a0a4a","#0f0535","#231060","#100530",
 ];
 
-// ═══════════════════════════════════════════════
+// ═══════════════════════════
 //  STATE
-// ═══════════════════════════════════════════════
+// ═══════════════════════════
 let spinOrder   = [];
 let currentSpin = 0;
 let spinning    = false;
 let angle       = 0;
-let fullResults = []; // accumulate for final list
+let fullResults = [];
 
-// ═══════════════════════════════════════════════
-//  SHUFFLE
-// ═══════════════════════════════════════════════
 function shuffle(arr) {
   const a = [...arr];
-  for (let i = a.length-1; i > 0; i--) {
-    const j = Math.floor(Math.random()*(i+1));
-    [a[i],a[j]] = [a[j],a[i]];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
   }
   return a;
 }
 
-// ═══════════════════════════════════════════════
-//  BUILD RIGGED ORDER
-// ═══════════════════════════════════════════════
 function buildOrder() {
   const others = teams.filter(t => t !== LOCKED_LAST);
   const rand   = shuffle(others);
@@ -339,26 +392,35 @@ function buildOrder() {
   angle        = 0;
 
   document.getElementById('resultBanner').classList.remove('show');
-  const fw = document.getElementById('finalOrderWrap');
-  // keep header, remove rows
+  const fw = document.getElementById('finalWrap');
   while (fw.children.length > 1) fw.removeChild(fw.lastChild);
   fw.classList.remove('show');
 
-  document.getElementById('spinBtn').textContent = 'SPIN THE WHEEL';
-  document.getElementById('spinBtn').disabled = false;
+  const btn = document.getElementById('spinBtn');
+  btn.textContent = 'Spin the Wheel';
+  btn.disabled = false;
+
   updateCounter();
   renderTeamList();
   drawWheel();
 }
 
-// ═══════════════════════════════════════════════
-//  CANVAS DRAW
-// ═══════════════════════════════════════════════
+// ═══════════════════════════
+//  CANVAS
+// ═══════════════════════════
 const canvas = document.getElementById('wheelCanvas');
 const ctx    = canvas.getContext('2d');
 const CX = canvas.width  / 2;
 const CY = canvas.height / 2;
-const R  = canvas.width  / 2 - 12;
+const R  = canvas.width  / 2 - 14;
+
+function lighten(hex, amt) {
+  const n = parseInt(hex.slice(1), 16);
+  const r = Math.min(255, (n >> 16) + Math.round(amt * 255));
+  const g = Math.min(255, ((n >> 8) & 0xff) + Math.round(amt * 255));
+  const b = Math.min(255, (n & 0xff) + Math.round(amt * 255));
+  return `rgb(${r},${g},${b})`;
+}
 
 function drawWheel(highlightIdx = -1) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -369,11 +431,17 @@ function drawWheel(highlightIdx = -1) {
 
   const slice = (2 * Math.PI) / n;
 
-  // outer ring
+  // outer glow ring
   ctx.beginPath();
-  ctx.arc(CX, CY, R + 6, 0, 2*Math.PI);
-  ctx.strokeStyle = 'rgba(124,111,224,0.45)';
+  ctx.arc(CX, CY, R + 8, 0, 2 * Math.PI);
+  ctx.strokeStyle = 'rgba(123,60,255,0.5)';
   ctx.lineWidth = 3;
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.arc(CX, CY, R + 2, 0, 2 * Math.PI);
+  ctx.strokeStyle = 'rgba(255,255,255,0.07)';
+  ctx.lineWidth = 1;
   ctx.stroke();
 
   for (let i = 0; i < n; i++) {
@@ -381,16 +449,24 @@ function drawWheel(highlightIdx = -1) {
     const end   = start + slice;
     const isHL  = (i === highlightIdx);
 
-    // slice
     ctx.beginPath();
     ctx.moveTo(CX, CY);
     ctx.arc(CX, CY, R, start, end);
     ctx.closePath();
-    ctx.fillStyle = isHL ? '#7c6fe0' : COLORS[i % COLORS.length];
+
+    if (isHL) {
+      ctx.fillStyle = '#7b3cff';
+    } else {
+      const gx = CX + Math.cos(start + slice / 2) * R * 0.5;
+      const gy = CY + Math.sin(start + slice / 2) * R * 0.5;
+      const grad = ctx.createRadialGradient(CX, CY, 0, gx, gy, R * 0.85);
+      grad.addColorStop(0, lighten(SLICE_COLORS[i % SLICE_COLORS.length], 0.14));
+      grad.addColorStop(1, SLICE_COLORS[i % SLICE_COLORS.length]);
+      ctx.fillStyle = grad;
+    }
     ctx.fill();
 
-    // border
-    ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+    ctx.strokeStyle = 'rgba(255,255,255,0.09)';
     ctx.lineWidth = 1.5;
     ctx.stroke();
 
@@ -399,26 +475,26 @@ function drawWheel(highlightIdx = -1) {
     ctx.translate(CX, CY);
     ctx.rotate(start + slice / 2);
     ctx.textAlign = 'right';
-    const fs = Math.max(10, Math.min(16, Math.floor(R * 0.12)));
-    ctx.font = `700 ${fs}px Poppins, sans-serif`;
-    ctx.fillStyle = '#ffffff';
-    ctx.shadowColor = 'rgba(0,0,0,0.85)';
+    const fs = Math.max(11, Math.min(17, Math.floor(R * 0.115)));
+    ctx.font = `800 ${fs}px Inter, sans-serif`;
+    ctx.fillStyle = 'rgba(249,248,255,0.93)';
+    ctx.shadowColor = 'rgba(0,0,0,0.95)';
     ctx.shadowBlur  = 5;
 
     let label = remaining[i];
-    const maxW = R * 0.72;
+    const maxW = R * 0.68;
     while (ctx.measureText(label).width > maxW && label.length > 2)
       label = label.slice(0, -1);
     if (label !== remaining[i]) label += '…';
 
-    ctx.fillText(label, R - 14, fs / 3);
+    ctx.fillText(label, R - 18, fs / 3);
     ctx.restore();
   }
 }
 
-// ═══════════════════════════════════════════════
+// ═══════════════════════════
 //  SPIN
-// ═══════════════════════════════════════════════
+// ═══════════════════════════
 function doSpin() {
   if (spinning) return;
   if (currentSpin >= spinOrder.length) { buildOrder(); return; }
@@ -432,47 +508,41 @@ function doSpin() {
   const target    = spinOrder[currentSpin];
   const targetIdx = remaining.indexOf(target);
 
-  const slice = (2 * Math.PI) / n;
-  // pointer is on the RIGHT (east, angle=0). We want target slice middle → angle=0
+  const slice       = (2 * Math.PI) / n;
   const targetAngle = -(targetIdx * slice + slice / 2);
-  let needed = ((targetAngle - angle) % (2*Math.PI) + 2*Math.PI) % (2*Math.PI);
+  let needed = ((targetAngle - angle) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
 
-  const extraSpins = (5 + Math.floor(Math.random()*4)) * 2 * Math.PI;
+  const extraSpins = (5 + Math.floor(Math.random() * 4)) * 2 * Math.PI;
   const total      = extraSpins + needed;
   const startAngle = angle;
-  const duration   = 3400 + Math.random() * 1000;
+  const duration   = 3500 + Math.random() * 900;
   const t0         = performance.now();
 
-  function ease(t) { return 1 - Math.pow(1-t, 4); }
+  function ease(t) { return 1 - Math.pow(1 - t, 4); }
 
   (function tick(now) {
-    const t = Math.min((now - t0) / duration, 1);
-    angle   = startAngle + total * ease(t);
+    const t  = Math.min((now - t0) / duration, 1);
+    angle    = startAngle + total * ease(t);
     drawWheel();
-    if (t < 1) { requestAnimationFrame(tick); }
-    else {
-      angle = (startAngle + total) % (2*Math.PI);
+    if (t < 1) {
+      requestAnimationFrame(tick);
+    } else {
+      angle = (startAngle + total) % (2 * Math.PI);
       drawWheel(targetIdx);
       setTimeout(() => onComplete(target), 350);
     }
   })(t0);
 }
 
-// ═══════════════════════════════════════════════
-//  ON COMPLETE
-// ═══════════════════════════════════════════════
 function onComplete(team) {
   spinning = false;
   currentSpin++;
-
   const pos    = currentSpin;
   const isLast = currentSpin === spinOrder.length;
-  fullResults.push({ pos, team, isLast });
+  fullResults.push({ pos, team });
 
-  // banner
   document.getElementById('rbNum').textContent  = pos;
   document.getElementById('rbName').textContent = team;
-  document.getElementById('rbTag').textContent  = isLast ? '🎉 Closing Act' : `#${pos} of ${spinOrder.length}`;
   document.getElementById('resultBanner').classList.add('show');
 
   updateCounter();
@@ -483,54 +553,39 @@ function onComplete(team) {
     drawWheel();
     const btn = document.getElementById('spinBtn');
     btn.disabled = false;
-
-    if (isLast) {
-      btn.textContent = 'RESET & GO AGAIN';
-      showFinalOrder();
-    } else {
-      btn.textContent = 'SPIN THE WHEEL';
-    }
+    btn.textContent = isLast ? 'Reset & Go Again' : 'Spin the Wheel';
+    if (isLast) showFinalOrder();
   }, 500);
 }
 
-// ═══════════════════════════════════════════════
-//  FINAL ORDER LIST
-// ═══════════════════════════════════════════════
 function showFinalOrder() {
-  const wrap = document.getElementById('finalOrderWrap');
-  // clear old rows (keep header)
+  const wrap = document.getElementById('finalWrap');
   while (wrap.children.length > 1) wrap.removeChild(wrap.lastChild);
-
-  fullResults.forEach(({ pos, team, isLast }) => {
+  fullResults.forEach(({ pos, team }) => {
     const row = document.createElement('div');
     row.className = 'fo-row';
-    row.style.animationDelay = `${(pos-1)*80}ms`;
-    row.innerHTML = `
-      <div class="fo-num">${pos}</div>
-      <div class="fo-name">${team}</div>
-      ${isLast ? '<div class="fo-badge">Closing Act</div>' : ''}
-    `;
+    row.style.animationDelay = `${(pos - 1) * 70}ms`;
+    row.innerHTML = `<div class="fo-num">${pos}</div><div class="fo-name">${team}</div>`;
     wrap.appendChild(row);
   });
-
   wrap.classList.add('show');
 }
 
-// ═══════════════════════════════════════════════
-//  SIDEBAR
-// ═══════════════════════════════════════════════
+// ═══════════════════════════
+//  SIDEBAR — no "next" hint
+// ═══════════════════════════
 function renderTeamList() {
   const el = document.getElementById('teamList');
   el.innerHTML = '';
   teams.forEach(t => {
     const idx  = spinOrder.indexOf(t);
+    // only mark as done once it's been revealed — never highlight "next"
     const done = idx !== -1 && idx < currentSpin;
-    const next = idx === currentSpin;
     const item = document.createElement('div');
-    item.className = 'team-item' + (done ? ' done' : '') + (next ? ' next' : '');
+    item.className = 'team-item' + (done ? ' done' : '');
     item.innerHTML = `
-      <div class="team-dot" style="background:${done ? '#555' : '#7c6fe0'}"></div>
-      <span style="flex:1">${t}</span>
+      <div class="team-dot"></div>
+      <span class="team-name-text">${t}</span>
       <button class="remove-btn" onclick="removeTeam(${JSON.stringify(t)})">✕</button>
     `;
     el.appendChild(item);
@@ -557,27 +612,21 @@ function updateCounter() {
   document.getElementById('spinsTotal').textContent = spinOrder.length;
 }
 
-// ═══════════════════════════════════════════════
-//  SPARKLES
-// ═══════════════════════════════════════════════
 function spawnSparkles() {
-  const e = ['✦','★','✧','◆','🔥','⚡','✨'];
-  for (let i = 0; i < 18; i++) {
+  const e = ['✦','★','✧','◆','✨'];
+  for (let i = 0; i < 16; i++) {
     setTimeout(() => {
       const s = document.createElement('div');
       s.className   = 'sparkle';
-      s.textContent = e[Math.floor(Math.random()*e.length)];
-      s.style.left  = Math.random()*100+'vw';
-      s.style.top   = Math.random()*70+'px';
+      s.textContent = e[Math.floor(Math.random() * e.length)];
+      s.style.left  = Math.random() * 100 + 'vw';
+      s.style.top   = Math.random() * 80 + 'px';
       document.body.appendChild(s);
       setTimeout(() => s.remove(), 1400);
-    }, i * 55);
+    }, i * 60);
   }
 }
 
-// ═══════════════════════════════════════════════
-//  INIT
-// ═══════════════════════════════════════════════
 buildOrder();
 canvas.addEventListener('click', doSpin);
 </script>
