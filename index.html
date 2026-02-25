@@ -575,7 +575,10 @@ function onComplete(team) {
       showFinalOverlay();
     } else {
       btn.disabled = false;
-      btn.textContent = 'Spin the Wheel';
+      // if next spin is the last one, update button label
+      btn.textContent = (spinOrder.length - currentSpin === 1)
+        ? 'Show Full Show Order'
+        : 'Spin the Wheel';
     }
   }, 500);
 }
