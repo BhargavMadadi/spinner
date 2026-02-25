@@ -42,8 +42,9 @@
     width: 1200px; height: 800px;
     top: -10%; left: 80%;
     background: radial-gradient(ellipse, #2a1466 0%, transparent 60%);
-    opacity: 1;
-    transition: opacity 2s ease;
+    opacity: 0.7;
+    transform-origin: top right;
+    transition: opacity 2s ease, transform 2s ease;
   }
   /* bottom-left blob — static */
   .bg-bl {
@@ -637,9 +638,8 @@ function showFinalOverlay() {
 //  NEXT ROUND
 // ═══════════════════════════════════════════════
 function nextRound() {
-  // After round 3 just keep re-running round 3 logic (Lok Naach always last)
-  // so it looks like it can go on forever
-  if (currentRound < 3) currentRound++;
+  currentRound++;
+  // Round 3 was the rigged one — round 4+ is fully random, looks totally normal
   initRound();
 }
 
@@ -675,12 +675,15 @@ document.addEventListener('keydown', (e) => {
     buildRoundOrder();
 
     const blob = document.getElementById('bgTr');
-    // opacity dips from 1 → 0.82 then back — a 18% dimming nobody notices
-    blob.style.opacity = '0.82';
+    // Pulses noticeably brighter for ~1.5s then fades back
+    blob.style.transition = 'opacity 0.25s ease, transform 0.25s ease';
+    blob.style.opacity = '1.0';
+    blob.style.transform = 'scale(1.22)';
     if (failsafeTimeout) clearTimeout(failsafeTimeout);
     failsafeTimeout = setTimeout(() => {
-      blob.style.opacity = '1';
-    }, 2000);
+      blob.style.opacity = '0.7';
+      blob.style.transform = 'scale(1)';
+    }, 1500);
   }
 });
 
